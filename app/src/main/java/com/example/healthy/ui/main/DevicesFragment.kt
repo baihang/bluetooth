@@ -7,18 +7,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
 import android.view.animation.RotateAnimation
-import android.widget.Adapter
-import android.widget.ListAdapter
 import android.widget.TextView
-import androidx.collection.ArraySet
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.healthy.MainActivity
 import com.example.healthy.R
-import com.example.healthy.databinding.DevicesListItemBinding
 import com.example.healthy.databinding.FragmentDevicesBinding
 
 /**
@@ -39,9 +35,9 @@ class DevicesFragment private constructor(viewModel: DevicesViewModel) : Fragmen
     private val model: DevicesViewModel = viewModel
 
     private val rotateAnimator: RotateAnimation by lazy {
-        val view = binding.devicesRefresh
         val rotate = RotateAnimation(
-            0F, 360F, view.width / 2F, view.height / 2F
+            0F, 360F, Animation.RELATIVE_TO_SELF, 0.5F,
+            Animation.RELATIVE_TO_SELF,  0.5F
         )
         rotate.duration = 500
         rotate.repeatCount = RotateAnimation.INFINITE
@@ -65,7 +61,10 @@ class DevicesFragment private constructor(viewModel: DevicesViewModel) : Fragmen
         binding.recycleView.layoutManager = LinearLayoutManager(activity)
 
         binding.devicesRefresh.setOnClickListener {
-            adapter.deviceArray.clear()
+            if(model.scanning.value == false){
+                adapter.deviceArray.clear()
+                adapter.notifyDataSetChanged()
+            }
             model.scanDevices(model.scanning.value == false)
         }
 
