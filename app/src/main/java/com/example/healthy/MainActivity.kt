@@ -12,9 +12,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.Observer
-import com.example.healthy.ui.main.DevicesFragment
-import com.example.healthy.ui.main.DevicesViewModel
 
 class MainActivity : AppCompatActivity() {
 
@@ -26,24 +23,9 @@ class MainActivity : AppCompatActivity() {
         bluetoothManager.adapter
     }
 
-    private val module: DevicesViewModel by lazy {
-        DevicesViewModel(application, bluetoothManager, bluetoothAdapter)
-    }
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, DevicesFragment.newInstance(module))
-                .commitNow()
-        }
-
-        module.deviceLiveData.observe(this, Observer { devices ->
-            Log.e(TAG, "devices size = ${devices.size}")
-        })
 
         checkPermission()
     }
