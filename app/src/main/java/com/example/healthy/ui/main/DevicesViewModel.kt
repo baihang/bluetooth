@@ -7,6 +7,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.util.Log
+import android.widget.Toast
 import androidx.collection.ArraySet
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
@@ -17,14 +18,12 @@ class DevicesViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private val TAG = "DevicesViewModel"
-
-    var manager: BluetoothManager? = null
+    private var manager: BluetoothManager? = null
 
     private var adapter: BluetoothAdapter? = null
     private var scanner: BluetoothLeScanner? = null
 
-    private fun initManager(){
+    private fun initManager() {
         if (manager == null) {
             manager =
                 getApplication<Application>().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -40,6 +39,7 @@ class DevicesViewModel(
     private var gatt: BluetoothGatt? = null
 
     var scanning: MutableLiveData<Boolean> = MutableLiveData(false)
+    var noticeMsg: MutableLiveData<String> = MutableLiveData()
 
     /**
      * 蓝牙设备列表
@@ -64,9 +64,12 @@ class DevicesViewModel(
      * 扫描设备
      */
     fun scanDevices(enable: Boolean) {
-        Log.e(TAG, "scan devices = $enable")
-        if(scanner == null){
+        if (scanner == null) {
             initManager()
+        }
+        if (adapter?.isEnabled != true) {
+            noticeMsg.value = "蓝牙已关闭，请打开蓝牙"
+            return
         }
         if (enable) {
             if (scanning.value == true) {
@@ -83,7 +86,24 @@ class DevicesViewModel(
     fun setDevices(device: BluetoothDevice) {
         this.device = device
         gatt = device.connectGatt(getApplication(), true, object : BluetoothGattCallback() {
+            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+                super.onServicesDiscovered(gatt, status)
+            }
 
+            override fun onCharacteristicChanged(
+                gatt: BluetoothGatt?,
+                characteristic: BluetoothGattCharacteristic?
+            ) {
+                super.onCharacteristicChanged(gatt, characteristic)
+            }
+
+            override fun onCharacteristicRead(
+                gatt: BluetoothGatt?,
+                characteristic: BluetoothGattCharacteristic?,
+                status: Int
+            ) {
+                super.onCharacteristicRead(gatt, characteristic, status)
+            }
         })
     }
 
@@ -91,6 +111,10 @@ class DevicesViewModel(
     private fun onPause() {
         scanner?.stopScan(scanCallBack)
         deviceLiveData.value?.clear()
+    }
+
+    companion object {
+        private const val TAG = "DevicesViewModel"
     }
 
 }
