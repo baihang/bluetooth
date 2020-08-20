@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import com.example.healthy.data.BluetoothBroadCastReceiver
 import com.example.healthy.ui.main.DevicesViewModel
 
 class MainActivity : AppCompatActivity() {
@@ -26,10 +27,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
         val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
-        val model = viewModelFactory.create(DevicesViewModel::class.java)
+        viewModelFactory.create(DevicesViewModel::class.java)
         manager = application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         adapter = manager.adapter
         checkPermission()
+        this.lifecycle.addObserver(BluetoothBroadCastReceiver(this))
     }
 
     override fun onStart() {
@@ -53,22 +55,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            REQUEST_BT_ENABLE -> {
-                Log.e(TAG, "onActivityResult REQUEST_BT_ENABLE")
-            }
-            REQUEST_LOCATION_PERMISSION -> {
-                Log.e(TAG, "onActivityResult REQUEST_LOCATION_PERMISSION")
-                if (resultCode != 0)
-                    Toast.makeText(this, "不授权无法扫描蓝牙", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
     companion object {
-        private const val REQUEST_BT_ENABLE = 1
         private const val REQUEST_LOCATION_PERMISSION = 2
         private const val TAG = "MainActivity"
     }
