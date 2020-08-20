@@ -1,12 +1,10 @@
 package com.example.healthy.ui.main
 
-import android.app.Activity
 import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
-import android.content.Context
 import android.util.Log
 import androidx.collection.ArraySet
 import androidx.lifecycle.AndroidViewModel
