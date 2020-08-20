@@ -9,32 +9,35 @@ import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
+import com.example.healthy.ui.main.DevicesViewModel
 
 class MainActivity : AppCompatActivity() {
 
-    private val bluetoothManager: BluetoothManager by lazy {
-        getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-    }
+    private lateinit var manager: BluetoothManager
 
-    private val bluetoothAdapter: BluetoothAdapter by lazy(LazyThreadSafetyMode.NONE) {
-        bluetoothManager.adapter
-    }
+    private lateinit var adapter: BluetoothAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-
+        val viewModelFactory = ViewModelProvider.AndroidViewModelFactory.getInstance(application)
+        val model = viewModelFactory.create(DevicesViewModel::class.java)
+        manager = application.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        adapter = manager.adapter
         checkPermission()
     }
 
     override fun onStart() {
         super.onStart()
-        if (!bluetoothAdapter.isEnabled) {
+        if (!adapter.isEnabled) {
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(intent, Companion.REQUEST_BT_ENABLE)
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            }.launch(intent)
         }
     }
 
