@@ -33,7 +33,7 @@ class DevicesFragment() : Fragment() {
     }
 
     private lateinit var binding: FragmentDevicesBinding
-//    private val model: DevicesViewModel by activityViewModels()
+    private val model: DevicesViewModel by activityViewModels()
 
     private val rotateAnimator: RotateAnimation by lazy {
         val rotate = RotateAnimation(
@@ -64,34 +64,34 @@ class DevicesFragment() : Fragment() {
         binding.devicesToolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-//        binding.devicesRefresh.setOnClickListener {
-//            if (model.scanning.value == false) {
-//                adapter.deviceArray.clear()
-//                adapter.notifyDataSetChanged()
-//            }
-//            model.scanDevices(model.scanning.value == false)
-//        }
+        binding.devicesRefresh.setOnClickListener {
+            if (model.scanning.value == false) {
+                adapter.deviceArray.clear()
+                adapter.notifyDataSetChanged()
+            }
+            model.scanDevices(model.scanning.value == false)
+        }
 
-//        model.deviceLiveData.observe(viewLifecycleOwner, Observer { set ->
-//            for (device in set) {
-//                if (!adapter.deviceArray.contains(device)) {
-//                    adapter.deviceArray.add(device)
-//                }
-//            }
-//            adapter.notifyDataSetChanged()
-//        })
-//
-//        model.scanning.observe(viewLifecycleOwner, Observer { scanning ->
-//            Log.e(TAG, "scanning = $scanning")
-//            if (scanning) {
-//                Handler().postDelayed({
-//                    model.scanDevices(false)
-//                }, 10000)
-//                binding.devicesRefresh.startAnimation(rotateAnimator)
-//            } else {
-//                binding.devicesRefresh.clearAnimation()
-//            }
-//        })
+        model.deviceLiveData.observe(viewLifecycleOwner, Observer { set ->
+            for (device in set) {
+                if (!adapter.deviceArray.contains(device)) {
+                    adapter.deviceArray.add(device)
+                }
+            }
+            adapter.notifyDataSetChanged()
+        })
+
+        model.scanning.observe(viewLifecycleOwner, Observer { scanning ->
+            Log.e(TAG, "scanning = $scanning")
+            if (scanning) {
+                Handler().postDelayed({
+                    model.scanDevices(false)
+                }, 10000)
+                binding.devicesRefresh.startAnimation(rotateAnimator)
+            } else {
+                binding.devicesRefresh.clearAnimation()
+            }
+        })
 
     }
 
