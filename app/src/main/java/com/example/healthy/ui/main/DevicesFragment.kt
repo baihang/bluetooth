@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
+import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
@@ -62,6 +63,7 @@ class DevicesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val adapter = DevicesAdapter()
+        adapter.setItemClickListener(itemClickListener)
         binding.recycleView.adapter = adapter
         binding.recycleView.layoutManager = LinearLayoutManager(activity)
 
@@ -108,9 +110,17 @@ class DevicesFragment : Fragment() {
         })
     }
 
+    private val itemClickListener = object : OnItemClickListener {
+        override fun onClickItem(position: Int, device:BluetoothDevice) {
+            Log.e(TAG, "click listener position = $position")
+            model.connectDevices(device)
+        }
+    }
+
     class DevicesAdapter() : RecyclerView.Adapter<DevicesViewHolder>() {
         val deviceArray: ArrayList<BluetoothDevice> = ArrayList()
         var listMode = LIST_MODEL_DEVICES
+        private var listener: OnItemClickListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DevicesViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(
@@ -127,6 +137,13 @@ class DevicesFragment : Fragment() {
             val device: BluetoothDevice? = deviceArray[position]
             holder.deviceName?.text = device?.name ?: "蓝牙-未命名"
             holder.deviceMac?.text = device?.address ?: "mac address"
+            holder.layout?.setOnClickListener {
+                listener?.onClickItem(position, deviceArray[position])
+            }
+        }
+
+        fun setItemClickListener(listener: OnItemClickListener) {
+            this.listener = listener
         }
 
     }
@@ -135,11 +152,17 @@ class DevicesFragment : Fragment() {
         RecyclerView.ViewHolder(itemView) {
         var deviceName: TextView? = null
         var deviceMac: TextView? = null
+        var layout: RelativeLayout? = null
 
         init {
+            layout = itemView.findViewById(R.id.item_device_layout)
             deviceName = itemView.findViewById(R.id.item_device_name)
             deviceMac = itemView.findViewById(R.id.item_device_mac)
         }
+    }
+
+    interface OnItemClickListener {
+        fun onClickItem(position: Int, device: BluetoothDevice)
     }
 
 }

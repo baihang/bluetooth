@@ -6,6 +6,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.net.wifi.aware.Characteristics
 import android.util.Log
 import android.widget.Toast
 import androidx.collection.ArraySet
@@ -40,7 +41,11 @@ class DevicesViewModel(
 
     var scanning: MutableLiveData<Boolean> = MutableLiveData(false)
     var noticeMsg: MutableLiveData<String> = MutableLiveData()
+    var serviceList: MutableLiveData<List<BluetoothGattService>> = MutableLiveData(ArrayList())
 
+    var characteristicList: MutableLiveData<List<Characteristics>> = MutableLiveData(ArrayList())
+
+    var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
     /**
      * 蓝牙设备列表
      */
@@ -83,11 +88,20 @@ class DevicesViewModel(
         scanning.value = enable
     }
 
-    fun setDevices(device: BluetoothDevice) {
+    fun connectDevices(device: BluetoothDevice) {
         this.device = device
         gatt = device.connectGatt(getApplication(), true, object : BluetoothGattCallback() {
+
+            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+                super.onConnectionStateChange(gatt, status, newState)
+                Log.e(TAG, "onConnectionStateChange")
+
+            }
+
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gatt, status)
+                Log.e(TAG, "onServicesDiscovered")
+                serviceList.value = gatt?.services
             }
 
             override fun onCharacteristicChanged(
@@ -95,6 +109,9 @@ class DevicesViewModel(
                 characteristic: BluetoothGattCharacteristic?
             ) {
                 super.onCharacteristicChanged(gatt, characteristic)
+                Log.e(TAG, "onCharacteristicChanged")
+                //TODO 根据service 获取 characteristic
+//                characteristicList.value =
             }
 
             override fun onCharacteristicRead(
@@ -103,6 +120,8 @@ class DevicesViewModel(
                 status: Int
             ) {
                 super.onCharacteristicRead(gatt, characteristic, status)
+                readData.value =  characteristic?.value
+                Log.e(TAG, "onCharacteristicRead ${readData.value?.size}")
             }
         })
     }
