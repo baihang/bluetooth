@@ -40,16 +40,8 @@ class MainFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
         binding.mainSetting.setOnClickListener {
-
-            val dataSet = binding.lineChart.data.dataSets[0]
-            val value: Float = (Math.random() + 20).toFloat()
-            dataSet.removeEntry(0)
-            val last = dataSet.getEntryForIndex(dataSet.entryCount - 1)
-            val entry = Entry(last.x + 1, value)
-            dataSet.addEntry(entry)
-            binding.lineChart.data.notifyDataChanged()
-            binding.lineChart.notifyDataSetChanged()
-            binding.lineChart.invalidate()
+            val value = (Math.random() * 100 + 20).toInt()
+            addValue(value)
         }
 
         binding.mainBluetooth.setOnClickListener {
@@ -62,10 +54,8 @@ class MainFragment() : Fragment() {
         chart.isEnabled = false
         chart.setDrawGridBackground(true)
 
-        val dataSet: LineDataSet = LineDataSet(ArrayList(), "heart")
-        chart.data = LineData(dataSet)
-
         addValue(chart)
+        chart.keepScreenOn = true
 
         chart.invalidate()
 
@@ -80,14 +70,38 @@ class MainFragment() : Fragment() {
             values.add(Entry(i.toFloat(), t))
         }
 
-        val dataSet = LineDataSet(values, "dataSet")
+        val dataSet = LineDataSet(values, "heart")
         dataSet.cubicIntensity = 0.2F
-        dataSet.lineWidth = 1.8f
+        dataSet.lineWidth = 1.5f
         dataSet.color = Color.BLACK
+        dataSet.setDrawCircles(false)
+        dataSet.fillColor = Color.GRAY
+        dataSet.setDrawFilled(true)
 
         val lineData = LineData(dataSet)
         chart.data = lineData
 
+    }
+
+    private fun addValue(value: Int) {
+        val dataSet = binding.lineChart.data.dataSets[0]
+        if(dataSet.entryCount >= 100){
+            dataSet.removeFirst()
+        }
+        if(dataSet.entryCount == 0){
+            dataSet.addEntry(Entry(0f, value.toFloat()))
+            return
+        }
+        val last = dataSet.getEntryForIndex(dataSet.entryCount - 1)
+        val entry = Entry(last.x + 1, value.toFloat())
+        if (entry.x < 0) {
+            //避免溢出后为负数
+            entry.x = 0f
+        }
+        dataSet.addEntry(entry)
+        binding.lineChart.data.notifyDataChanged()
+        binding.lineChart.notifyDataSetChanged()
+        binding.lineChart.invalidate()
     }
 
 
