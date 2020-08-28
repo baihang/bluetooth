@@ -46,6 +46,7 @@ class DevicesViewModel(
     var characteristicList: MutableLiveData<List<Characteristics>> = MutableLiveData(ArrayList())
 
     var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
+
     /**
      * 蓝牙设备列表
      */
@@ -95,7 +96,10 @@ class DevicesViewModel(
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 super.onConnectionStateChange(gatt, status, newState)
                 Log.e(TAG, "onConnectionStateChange")
-
+                if (status == BluetoothGatt.STATE_CONNECTED) {
+                    Log.e(TAG, "connected")
+                    serviceList.value = gatt?.services
+                }
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
@@ -120,7 +124,7 @@ class DevicesViewModel(
                 status: Int
             ) {
                 super.onCharacteristicRead(gatt, characteristic, status)
-                readData.value =  characteristic?.value
+                readData.value = characteristic?.value
                 Log.e(TAG, "onCharacteristicRead ${readData.value?.size}")
             }
         })

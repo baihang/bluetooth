@@ -2,6 +2,8 @@ package com.example.healthy.ui.main
 
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattServer
+import android.bluetooth.BluetoothGattService
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -94,6 +96,8 @@ class DevicesFragment : Fragment() {
                     model.scanDevices(false)
                 }, 10000)
                 binding.devicesRefresh.startAnimation(rotateAnimator)
+                adapter.listMode = LIST_MODEL_DEVICES
+                adapter.notifyDataSetChanged()
             } else {
                 binding.devicesRefresh.clearAnimation()
             }
@@ -108,10 +112,18 @@ class DevicesFragment : Fragment() {
                     }.launch(intent)
                 }).show()
         })
+
+        model.serviceList.observe(viewLifecycleOwner, {
+            adapter.listMode = LIST_MODEL_SERVICE
+            for(service in it){
+                adapter.serviceList.add(service)
+            }
+            adapter.notifyDataSetChanged()
+        })
     }
 
     private val itemClickListener = object : OnItemClickListener {
-        override fun onClickItem(position: Int, device:BluetoothDevice) {
+        override fun onClickItem(position: Int, device: BluetoothDevice) {
             Log.e(TAG, "click listener position = $position")
             model.connectDevices(device)
         }
@@ -119,6 +131,7 @@ class DevicesFragment : Fragment() {
 
     class DevicesAdapter() : RecyclerView.Adapter<DevicesViewHolder>() {
         val deviceArray: ArrayList<BluetoothDevice> = ArrayList()
+        val serviceList: ArrayList<BluetoothGattService> = ArrayList()
         var listMode = LIST_MODEL_DEVICES
         private var listener: OnItemClickListener? = null
 
@@ -130,15 +143,24 @@ class DevicesFragment : Fragment() {
         }
 
         override fun getItemCount(): Int {
-            return deviceArray.size
+            return if(listMode == LIST_MODEL_DEVICES){
+                deviceArray.size
+            } else{
+                serviceList.size
+            }
+
         }
 
         override fun onBindViewHolder(holder: DevicesViewHolder, position: Int) {
+            if(listMode == LIST_MODEL_DEVICES){
             val device: BluetoothDevice? = deviceArray[position]
             holder.deviceName?.text = device?.name ?: "蓝牙-未命名"
             holder.deviceMac?.text = device?.address ?: "mac address"
             holder.layout?.setOnClickListener {
                 listener?.onClickItem(position, deviceArray[position])
+            }}else{
+                val service = serviceList[position]
+                holder.deviceName?.text = service.uuid.toString()
             }
         }
 
