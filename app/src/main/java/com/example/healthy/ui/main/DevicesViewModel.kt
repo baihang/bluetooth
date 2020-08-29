@@ -14,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import java.util.logging.Handler
 
 class DevicesViewModel(
     application: Application
@@ -43,7 +44,8 @@ class DevicesViewModel(
     var noticeMsg: MutableLiveData<String> = MutableLiveData()
     var serviceList: MutableLiveData<List<BluetoothGattService>> = MutableLiveData(ArrayList())
 
-    var characteristicList: MutableLiveData<List<Characteristics>> = MutableLiveData(ArrayList())
+    var characteristicList: MutableLiveData<List<BluetoothGattCharacteristic>> =
+        MutableLiveData(ArrayList())
 
     var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
@@ -92,10 +94,16 @@ class DevicesViewModel(
     }
 
     fun connectService(service: BluetoothGattService) {
+        characteristicList.value = service.characteristics
+//        connectStatus.postValue(SERVICE_CONNECTED)
 
+        Log.e(TAG, "service connected character = ${service.characteristics.size}")
+        for(character in service.characteristics){
+            gatt?.setCharacteristicNotification(character, true)
+        }
     }
 
-    fun discoversService(){
+    fun discoversService() {
         gatt?.discoverServices()
     }
 
@@ -107,21 +115,19 @@ class DevicesViewModel(
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 super.onConnectionStateChange(gatt, status, newState)
                 Log.e(TAG, "onConnectionStateChange")
-                connectStatus.value = newState
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
                     Log.e(TAG, "connected")
                     gatt?.discoverServices()
+                    connectStatus.postValue(newState)
                 }
 
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gatt, status)
-                Log.e(TAG, "onServicesDiscovered")
+                Log.e(TAG, "onServicesDiscovered status")
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    connectStatus.value = SERVICE_CONNECTED
                     serviceList.value = gatt?.services
-                    Log.e(TAG, "BluetoothGatt.GATT_SUCCESS")
                 }
             }
 
