@@ -95,6 +95,10 @@ class DevicesViewModel(
 
     }
 
+    fun discoversService(){
+        gatt?.discoverServices()
+    }
+
 
     fun connectDevices(device: BluetoothDevice) {
         this.device = device
@@ -107,7 +111,6 @@ class DevicesViewModel(
                 if (newState == BluetoothGatt.STATE_CONNECTED) {
                     Log.e(TAG, "connected")
                     gatt?.discoverServices()
-//                    serviceList.value = gatt?.services
                 }
 
             }

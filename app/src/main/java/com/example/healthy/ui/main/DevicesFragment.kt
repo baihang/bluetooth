@@ -110,6 +110,7 @@ class DevicesFragment : Fragment() {
                 BluetoothAdapter.STATE_CONNECTED -> {
                     adapter.listMode = LIST_MODEL_SERVICE
                     adapter.notifyDataSetChanged()
+                    model.discoversService()
                 }
 
                 DevicesViewModel.SERVICE_CONNECTED ->{
