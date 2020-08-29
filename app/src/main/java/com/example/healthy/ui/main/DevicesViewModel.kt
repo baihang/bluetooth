@@ -127,7 +127,7 @@ class DevicesViewModel(
                 super.onServicesDiscovered(gatt, status)
                 Log.e(TAG, "onServicesDiscovered status")
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    serviceList.value = gatt?.services
+                    serviceList.postValue(gatt?.services)
                 }
             }
 
@@ -137,7 +137,8 @@ class DevicesViewModel(
             ) {
                 super.onCharacteristicChanged(gatt, characteristic)
                 Log.e(TAG, "onCharacteristicChanged")
-                //TODO 根据service 获取 characteristic
+                readData.postValue(characteristic?.value)
+
 //                characteristicList.value =
             }
 
@@ -147,7 +148,6 @@ class DevicesViewModel(
                 status: Int
             ) {
                 super.onCharacteristicRead(gatt, characteristic, status)
-                readData.value = characteristic?.value
                 Log.e(TAG, "onCharacteristicRead ${readData.value?.size}")
             }
         })

@@ -78,9 +78,10 @@ class DataAnalyze {
     private var dataPackage: BaseData? = null
     private var value:Short = 0
 
-    fun parseData(data: Array<Byte>) {
+    fun parseData(data: ByteArray) {
         for (b in data) {
             val byte: Short = (b and 0xFF.toByte()).toShort()
+            Log.e(TAG, "status = $status byte = $byte")
             when (status) {
                 STATUS_NONE -> {
                     if (byte == BaseData.HEAD) {
