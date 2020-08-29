@@ -37,7 +37,8 @@ class DataAnalyze {
          */
         private val dataArrayList: Array<BaseData> = arrayOf(
             HeartOneData(),
-            HeartThreeData()
+            HeartThreeData(),
+            PulseData()
         )
     }
 
@@ -80,7 +81,7 @@ class DataAnalyze {
 
     fun parseData(data: ByteArray) {
         for (b in data) {
-            val byte: Short = (b and 0xFF.toByte()).toShort()
+            val byte: Short = b.toShort() and 0xFF
             Log.e(TAG, "status = $status byte = $byte")
             when (status) {
                 STATUS_NONE -> {
