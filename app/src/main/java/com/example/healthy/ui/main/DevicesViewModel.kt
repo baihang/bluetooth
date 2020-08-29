@@ -46,6 +46,8 @@ class DevicesViewModel(
     var characteristicList: MutableLiveData<List<Characteristics>> = MutableLiveData(ArrayList())
 
     var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
+    var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
+
 
     /**
      * 蓝牙设备列表
@@ -89,6 +91,11 @@ class DevicesViewModel(
         scanning.value = enable
     }
 
+    fun connectService(service: BluetoothGattService) {
+
+    }
+
+
     fun connectDevices(device: BluetoothDevice) {
         this.device = device
         gatt = device.connectGatt(getApplication(), true, object : BluetoothGattCallback() {
@@ -96,16 +103,23 @@ class DevicesViewModel(
             override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
                 super.onConnectionStateChange(gatt, status, newState)
                 Log.e(TAG, "onConnectionStateChange")
-                if (status == BluetoothGatt.STATE_CONNECTED) {
+                connectStatus.value = newState
+                if (newState == BluetoothGatt.STATE_CONNECTED) {
                     Log.e(TAG, "connected")
-                    serviceList.value = gatt?.services
+                    gatt?.discoverServices()
+//                    serviceList.value = gatt?.services
                 }
+
             }
 
             override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
                 super.onServicesDiscovered(gatt, status)
                 Log.e(TAG, "onServicesDiscovered")
-                serviceList.value = gatt?.services
+                if (status == BluetoothGatt.GATT_SUCCESS) {
+                    connectStatus.value = SERVICE_CONNECTED
+                    serviceList.value = gatt?.services
+                    Log.e(TAG, "BluetoothGatt.GATT_SUCCESS")
+                }
             }
 
             override fun onCharacteristicChanged(
@@ -138,6 +152,8 @@ class DevicesViewModel(
 
     companion object {
         private const val TAG = "DevicesViewModel"
+        const val SERVICE_CONNECTED = 3
+
     }
 
 }

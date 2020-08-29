@@ -1,9 +1,6 @@
 package com.example.healthy.ui.main
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothGattServer
-import android.bluetooth.BluetoothGattService
+import android.bluetooth.*
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -96,13 +93,30 @@ class DevicesFragment : Fragment() {
                     model.scanDevices(false)
                 }, 10000)
                 binding.devicesRefresh.startAnimation(rotateAnimator)
-                adapter.listMode = LIST_MODEL_DEVICES
-                adapter.notifyDataSetChanged()
+
             } else {
                 binding.devicesRefresh.clearAnimation()
             }
         })
 
+
+        model.connectStatus.observe(viewLifecycleOwner, { status ->
+            when (status) {
+                BluetoothAdapter.STATE_DISCONNECTED->{
+                    adapter.listMode = LIST_MODEL_DEVICES
+                    adapter.notifyDataSetChanged()
+                }
+
+                BluetoothAdapter.STATE_CONNECTED -> {
+                    adapter.listMode = LIST_MODEL_SERVICE
+                    adapter.notifyDataSetChanged()
+                }
+
+                DevicesViewModel.SERVICE_CONNECTED ->{
+                    Log.e(TAG, "service connected")
+                }
+            }
+        })
 
         model.noticeMsg.observe(viewLifecycleOwner, {
             Snackbar.make(binding.devicesLayout, model.noticeMsg.value ?: "", Snackbar.LENGTH_LONG)
@@ -114,8 +128,8 @@ class DevicesFragment : Fragment() {
         })
 
         model.serviceList.observe(viewLifecycleOwner, {
-            adapter.listMode = LIST_MODEL_SERVICE
-            for(service in it){
+//            adapter.listMode = LIST_MODEL_SERVICE
+            for (service in it) {
                 adapter.serviceList.add(service)
             }
             adapter.notifyDataSetChanged()
@@ -127,6 +141,11 @@ class DevicesFragment : Fragment() {
             Log.e(TAG, "click listener position = $position")
             model.connectDevices(device)
         }
+
+        override fun connectService(position: Int, service: BluetoothGattService) {
+
+        }
+
     }
 
     class DevicesAdapter() : RecyclerView.Adapter<DevicesViewHolder>() {
@@ -143,24 +162,30 @@ class DevicesFragment : Fragment() {
         }
 
         override fun getItemCount(): Int {
-            return if(listMode == LIST_MODEL_DEVICES){
+            return if (listMode == LIST_MODEL_DEVICES) {
                 deviceArray.size
-            } else{
+            } else {
                 serviceList.size
             }
 
         }
 
         override fun onBindViewHolder(holder: DevicesViewHolder, position: Int) {
-            if(listMode == LIST_MODEL_DEVICES){
-            val device: BluetoothDevice? = deviceArray[position]
-            holder.deviceName?.text = device?.name ?: "蓝牙-未命名"
-            holder.deviceMac?.text = device?.address ?: "mac address"
-            holder.layout?.setOnClickListener {
-                listener?.onClickItem(position, deviceArray[position])
-            }}else{
+            if (listMode == LIST_MODEL_DEVICES) {
+                val device: BluetoothDevice? = deviceArray[position]
+                holder.deviceName?.text = device?.name ?: "蓝牙-未命名"
+                holder.deviceMac?.text = device?.address ?: "mac address"
+            } else {
                 val service = serviceList[position]
                 holder.deviceName?.text = service.uuid.toString()
+            }
+
+            holder.layout?.setOnClickListener {
+                if (listMode == LIST_MODEL_DEVICES) {
+                    listener?.onClickItem(position, deviceArray[position])
+                } else {
+                    listener?.connectService(position, serviceList[position])
+                }
             }
         }
 
@@ -185,6 +210,7 @@ class DevicesFragment : Fragment() {
 
     interface OnItemClickListener {
         fun onClickItem(position: Int, device: BluetoothDevice)
+        fun connectService(position: Int, service: BluetoothGattService)
     }
 
 }
