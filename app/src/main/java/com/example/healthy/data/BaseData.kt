@@ -10,7 +10,7 @@ abstract class BaseData {
         const val HEAD_LENGTH = 4
 
         fun getDataType(value1: Short, value2: Short): BaseData? {
-            val type: Int = value1.toInt().shr(8) + value2
+            val type: Int = value1.toInt().shl(8) + value2
             Log.e(TAG, "type = $type")
             return when (type) {
                 0xAA07 -> {
@@ -34,7 +34,7 @@ abstract class BaseData {
     lateinit var trialData: Array<Short>
 
     fun dataInit() {
-        bodyData = Array(headData[3].toInt(), init = { 0 })
+        bodyData = Array(headData[3].toInt() - 1, init = { 0 })
         trialData = arrayOf(0)
     }
 
