@@ -34,6 +34,8 @@ class DevicesFragment : Fragment() {
 
         private const val LIST_MODEL_DEVICES = 0
         private const val LIST_MODEL_SERVICE = 1
+
+        private const val CHARACTER_LIST = 3
     }
 
     private lateinit var binding: FragmentDevicesBinding
@@ -102,7 +104,7 @@ class DevicesFragment : Fragment() {
 
         model.connectStatus.observe(viewLifecycleOwner, { status ->
             when (status) {
-                BluetoothAdapter.STATE_DISCONNECTED->{
+                BluetoothAdapter.STATE_DISCONNECTED -> {
                     adapter.listMode = LIST_MODEL_DEVICES
                     adapter.notifyDataSetChanged()
                 }
@@ -113,7 +115,7 @@ class DevicesFragment : Fragment() {
                     model.discoversService()
                 }
 
-                DevicesViewModel.SERVICE_CONNECTED ->{
+                DevicesViewModel.SERVICE_CONNECTED -> {
                     Log.e(TAG, "service connected")
                 }
             }
@@ -129,7 +131,6 @@ class DevicesFragment : Fragment() {
         })
 
         model.serviceList.observe(viewLifecycleOwner, {
-//            adapter.listMode = LIST_MODEL_SERVICE
             for (service in it) {
                 adapter.serviceList.add(service)
             }
@@ -144,7 +145,7 @@ class DevicesFragment : Fragment() {
         }
 
         override fun connectService(position: Int, service: BluetoothGattService) {
-
+            model.connectService(service)
         }
 
     }
@@ -179,6 +180,7 @@ class DevicesFragment : Fragment() {
             } else {
                 val service = serviceList[position]
                 holder.deviceName?.text = service.uuid.toString()
+                holder.deviceMac?.text = ""
             }
 
             holder.layout?.setOnClickListener {
