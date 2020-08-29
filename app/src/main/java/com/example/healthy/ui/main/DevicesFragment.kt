@@ -20,6 +20,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthy.R
+import com.example.healthy.data.DataAnalyze
 import com.example.healthy.databinding.FragmentDevicesBinding
 import com.google.android.material.snackbar.Snackbar
 
@@ -136,7 +137,14 @@ class DevicesFragment : Fragment() {
             }
             adapter.notifyDataSetChanged()
         })
+
+        model.readData.observe(viewLifecycleOwner, {array ->
+            Log.e(TAG, "array = $array")
+            dataAnalyzer.parseData(array)
+        })
     }
+
+    private val dataAnalyzer:DataAnalyze by lazy { DataAnalyze() }
 
     private val itemClickListener = object : OnItemClickListener {
         override fun onClickItem(position: Int, device: BluetoothDevice) {
