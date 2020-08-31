@@ -37,17 +37,13 @@ class DataAnalyze {
          */
         private val dataArrayList: Array<BaseData> = arrayOf(
             HeartOneData(),
-            HeartThreeData()
+            HeartThreeData(),
+            PulseData()
         )
     }
 
-    /**
-     * 整个数据包长度
-     */
-    private var dataPackLength = 15
     private var headLength = 4
-    private var bodyLength = 10
-    private var trailLength = 2
+    private var trailLength = 1
 
     /**
      * 全局状态机
@@ -72,16 +68,15 @@ class DataAnalyze {
             headValue2.add(data.headData[2])
         }
         headLength = BaseData.HEAD_LENGTH
-
     }
 
     private var dataPackage: BaseData? = null
     private var value:Short = 0
 
-    fun parseData(data: ByteArray) {
+    fun parseData(data: ByteArray): Array<Array<Int>>? {
         for (b in data) {
-            val byte: Short = (b and 0xFF.toByte()).toShort()
-            Log.e(TAG, "status = $status byte = $byte")
+            val byte: Short = b.toShort() and 0xFF
+//            Log.e(TAG, "status = $status byte = $byte")
             when (status) {
                 STATUS_NONE -> {
                     if (byte == BaseData.HEAD) {
@@ -104,9 +99,9 @@ class DataAnalyze {
                             if(headValue2.contains(byte)){
                                 headStatus++
                                 dataPackage = BaseData.getDataType(value, byte)
-                                if(dataPackage == null){
-                                    Log.e(TAG, "未找到指定类型  value1 = $value value2 = $byte")
-                                }
+//                                if(dataPackage == null){
+//                                    Log.e(TAG, "未找到指定类型  value1 = $value value2 = $byte")
+//                                }
                             }else{
                                 status = STATUS_NONE
                             }
@@ -125,9 +120,12 @@ class DataAnalyze {
                     }
                 }
                 STATUS_BODY -> {
+                    if(dataPackage == null){
+                        return null
+                    }
                     dataPackage?.bodyData?.set(bodyStatus, byte)
                     bodyStatus++
-                    if (bodyStatus >= bodyLength) {
+                    if (bodyStatus >= dataPackage?.bodyData?.size!!) {
                         status = STATUS_TRAIL
                         trailStatus = 0
                     }
@@ -135,12 +133,14 @@ class DataAnalyze {
                 STATUS_TRAIL -> {
                     dataPackage?.trialData?.set(trailStatus, byte)
                     trailStatus++
-                    if (trailStatus == trailLength) {
+                    if (trailStatus >= trailLength) {
                         status = STATUS_NONE
+                        return dataPackage?.getData()
                     }
                 }
             }
         }
+        return null
     }
 
 }

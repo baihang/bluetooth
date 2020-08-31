@@ -47,6 +47,12 @@ class MainFragment() : Fragment() {
         binding.mainBluetooth.setOnClickListener {
             findNavController().navigate(R.id.action_MainFragment_to_DevicesFragment)
         }
+
+        viewModel.resultValue.observe(viewLifecycleOwner, {
+            for (i in it[0]) {
+                addValue(i)
+            }
+        })
     }
 
     private fun initLineChart() {
@@ -85,10 +91,10 @@ class MainFragment() : Fragment() {
 
     private fun addValue(value: Int) {
         val dataSet = binding.lineChart.data.dataSets[0]
-        if(dataSet.entryCount >= 100){
+        if (dataSet.entryCount >= 100) {
             dataSet.removeFirst()
         }
-        if(dataSet.entryCount == 0){
+        if (dataSet.entryCount == 0) {
             dataSet.addEntry(Entry(0f, value.toFloat()))
             return
         }
