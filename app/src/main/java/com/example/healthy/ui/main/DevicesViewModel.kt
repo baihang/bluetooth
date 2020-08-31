@@ -14,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import com.example.healthy.data.DataAnalyze
 import java.util.logging.Handler
 
 class DevicesViewModel(
@@ -40,6 +41,8 @@ class DevicesViewModel(
     private var device: BluetoothDevice? = null
     private var gatt: BluetoothGatt? = null
 
+    private val dataAnalyzer: DataAnalyze by lazy { DataAnalyze() }
+
     var scanning: MutableLiveData<Boolean> = MutableLiveData(false)
     var noticeMsg: MutableLiveData<String> = MutableLiveData()
     var serviceList: MutableLiveData<List<BluetoothGattService>> = MutableLiveData(ArrayList())
@@ -50,6 +53,7 @@ class DevicesViewModel(
     var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
 
+    var resultValue: MutableLiveData<Array<Array<Int>>> = MutableLiveData()
 
     /**
      * 蓝牙设备列表
@@ -98,15 +102,10 @@ class DevicesViewModel(
 //        connectStatus.postValue(SERVICE_CONNECTED)
 
         Log.e(TAG, "service connected character = ${service.characteristics.size}")
-        for(character in service.characteristics){
+        for (character in service.characteristics) {
             gatt?.setCharacteristicNotification(character, true)
         }
     }
-
-    fun discoversService() {
-        gatt?.discoverServices()
-    }
-
 
     fun connectDevices(device: BluetoothDevice) {
         this.device = device
@@ -137,9 +136,13 @@ class DevicesViewModel(
             ) {
                 super.onCharacteristicChanged(gatt, characteristic)
                 Log.e(TAG, "onCharacteristicChanged")
-                readData.postValue(characteristic?.value)
-
-//                characteristicList.value =
+                if (characteristic?.value != null) {
+                    readData.postValue(characteristic.value)
+                    val result = dataAnalyzer.parseData(characteristic.value)
+                    if (result != null) {
+                        resultValue.postValue(result)
+                    }
+                }
             }
 
             override fun onCharacteristicRead(

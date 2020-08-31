@@ -11,7 +11,7 @@ abstract class BaseData {
 
         fun getDataType(value1: Short, value2: Short): BaseData? {
             val type: Int = value1.toInt().shl(8) + value2
-            Log.e(TAG, "type = $type")
+//            Log.e(TAG, "type = $type")
             return when (type) {
                 0xAA07 -> {
                     HeartOneData()
@@ -32,10 +32,19 @@ abstract class BaseData {
     lateinit var headData: Array<Short>
     lateinit var bodyData: Array<Short>
     lateinit var trialData: Array<Short>
+    lateinit var valueArray: Array<Array<Int>>
 
     fun dataInit() {
         bodyData = Array(headData[3].toInt() - 1, init = { 0 })
         trialData = arrayOf(0)
+        valueArray = arrayOf(Array(bodyData.size / 2, init = { 0 }))
+    }
+
+    open fun getData(): Array<Array<Int>> {
+        for (index in bodyData.indices step 2) {
+            valueArray[0][index / 2] = bodyData[index].toInt().shl(8) + bodyData[index + 1]
+        }
+        return valueArray
     }
 
 }
