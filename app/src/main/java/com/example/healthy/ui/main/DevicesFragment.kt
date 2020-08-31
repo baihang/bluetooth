@@ -113,11 +113,12 @@ class DevicesFragment : Fragment() {
                 BluetoothAdapter.STATE_CONNECTED -> {
                     adapter.listMode = LIST_MODEL_SERVICE
                     adapter.notifyDataSetChanged()
-                    model.discoversService()
+//                    model.discoversService()
                 }
 
                 DevicesViewModel.SERVICE_CONNECTED -> {
                     Log.e(TAG, "service connected")
+                    findNavController().navigateUp()
                 }
             }
         })
@@ -138,15 +139,11 @@ class DevicesFragment : Fragment() {
             adapter.notifyDataSetChanged()
         })
 
-        model.readData.observe(viewLifecycleOwner, { array ->
-            if (array != null) {
-                Log.e(TAG, "array = $array")
-                dataAnalyzer.parseData(array)
-            }
-        })
+//        model.readData.observe(viewLifecycleOwner, {array ->
+//            Log.e(TAG, "array = $array")
+//        })
     }
 
-    private val dataAnalyzer: DataAnalyze by lazy { DataAnalyze() }
 
     private val itemClickListener = object : OnItemClickListener {
         override fun onClickItem(position: Int, device: BluetoothDevice) {

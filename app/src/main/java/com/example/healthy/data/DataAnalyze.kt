@@ -42,13 +42,8 @@ class DataAnalyze {
         )
     }
 
-    /**
-     * 整个数据包长度
-     */
-    private var dataPackLength = 15
     private var headLength = 4
-    private var bodyLength = 10
-    private var trailLength = 2
+    private var trailLength = 1
 
     /**
      * 全局状态机
@@ -79,10 +74,10 @@ class DataAnalyze {
     private var dataPackage: BaseData? = null
     private var value:Short = 0
 
-    fun parseData(data: ByteArray) {
+    fun parseData(data: ByteArray): Array<Array<Int>>? {
         for (b in data) {
             val byte: Short = b.toShort() and 0xFF
-            Log.e(TAG, "status = $status byte = $byte")
+//            Log.e(TAG, "status = $status byte = $byte")
             when (status) {
                 STATUS_NONE -> {
                     if (byte == BaseData.HEAD) {
@@ -126,9 +121,12 @@ class DataAnalyze {
                     }
                 }
                 STATUS_BODY -> {
+                    if(dataPackage == null){
+                        return null
+                    }
                     dataPackage?.bodyData?.set(bodyStatus, byte)
                     bodyStatus++
-                    if (bodyStatus >= bodyLength) {
+                    if (bodyStatus >= dataPackage?.bodyData?.size!!) {
                         status = STATUS_TRAIL
                         trailStatus = 0
                     }
@@ -136,12 +134,14 @@ class DataAnalyze {
                 STATUS_TRAIL -> {
                     dataPackage?.trialData?.set(trailStatus, byte)
                     trailStatus++
-                    if (trailStatus == trailLength) {
+                    if (trailStatus >= trailLength) {
                         status = STATUS_NONE
+                        return dataPackage?.getData()
                     }
                 }
             }
         }
+        return null
     }
 
 }
