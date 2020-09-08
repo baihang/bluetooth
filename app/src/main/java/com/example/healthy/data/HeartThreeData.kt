@@ -12,6 +12,7 @@ class HeartThreeData : BaseData() {
         valueArray = Array(3, init = {
             arrayOf(0, 0)
         })
+        label = "三导联心电"
     }
 
     override fun getData(): Array<Array<Int>> {

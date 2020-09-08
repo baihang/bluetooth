@@ -16,6 +16,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -103,7 +104,7 @@ class DevicesFragment : Fragment() {
         })
 
 
-        model.connectStatus.observe(viewLifecycleOwner, { status ->
+        model.connectStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
                 BluetoothAdapter.STATE_DISCONNECTED -> {
                     adapter.listMode = LIST_MODEL_DEVICES
@@ -113,7 +114,6 @@ class DevicesFragment : Fragment() {
                 BluetoothAdapter.STATE_CONNECTED -> {
                     adapter.listMode = LIST_MODEL_SERVICE
                     adapter.notifyDataSetChanged()
-//                    model.discoversService()
                 }
 
                 DevicesViewModel.SERVICE_CONNECTED -> {
@@ -121,27 +121,24 @@ class DevicesFragment : Fragment() {
                     findNavController().navigateUp()
                 }
             }
-        })
+        }
 
-        model.noticeMsg.observe(viewLifecycleOwner, {
+        model.noticeMsg.observe(viewLifecycleOwner) {
             Snackbar.make(binding.devicesLayout, model.noticeMsg.value ?: "", Snackbar.LENGTH_LONG)
                 .setAction("打开", View.OnClickListener {
                     val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                     }.launch(intent)
                 }).show()
-        })
+        }
 
-        model.serviceList.observe(viewLifecycleOwner, {
+        model.serviceList.observe(viewLifecycleOwner) {
             for (service in it) {
                 adapter.serviceList.add(service)
             }
             adapter.notifyDataSetChanged()
-        })
+        }
 
-//        model.readData.observe(viewLifecycleOwner, {array ->
-//            Log.e(TAG, "array = $array")
-//        })
     }
 
 

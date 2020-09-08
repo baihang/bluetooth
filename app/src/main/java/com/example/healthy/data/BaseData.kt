@@ -33,9 +33,10 @@ abstract class BaseData {
     lateinit var bodyData: Array<Short>
     lateinit var trialData: Array<Short>
     lateinit var valueArray: Array<Array<Int>>
+    lateinit var label:String
 
     fun dataInit() {
-        bodyData = Array(headData[3].toInt() - 1, init = { 0 })
+        bodyData = Array(headData[3].toInt() - 1, init = { 0.toShort() })
         trialData = arrayOf(0)
         valueArray = arrayOf(Array(bodyData.size / 2, init = { 0 }))
     }

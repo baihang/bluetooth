@@ -11,16 +11,18 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import com.example.healthy.data.BaseData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 
 class MainFragment() : Fragment() {
 
     companion object {
-
+        private val colors = arrayOf(Color.RED, Color.BLUE, Color.CYAN)
         private const val TAG = "MainFragment"
     }
 
@@ -49,8 +51,8 @@ class MainFragment() : Fragment() {
             findNavController().navigate(R.id.action_MainFragment_to_DevicesFragment)
         }
 
-        viewModel.resultValue.observe(viewLifecycleOwner) {data ->
-
+        viewModel.resultValue.observe(viewLifecycleOwner) { data ->
+            addValue(data)
         }
     }
 
@@ -59,33 +61,59 @@ class MainFragment() : Fragment() {
         chart.isEnabled = false
         chart.setDrawGridBackground(true)
 
-        addValue(chart)
+        chart.data = LineData()
         chart.keepScreenOn = true
 
         chart.invalidate()
 
     }
 
-    private fun addValue(chart: LineChart) {
-
-        val values = java.util.ArrayList<Entry>()
-
-        for (i in 0 until 100) {
-            val t = (Math.random() * (100 + 1)).toFloat() + 20
-            values.add(Entry(i.toFloat(), t))
+    private fun addValue(data: BaseData) {
+        val chartSet = binding.lineChart.data.dataSets
+        val dataArray = data.getData()
+        if (chartSet.size != dataArray.size) {
+            chartSet.clear()
+            for (i in dataArray.indices) {
+                val set = addDataSet(data.label + " #" + i, colors[i], dataArray.size == 1)
+                chartSet[i] = set
+            }
         }
+        for (i in dataArray[0].indices) {
+            for (y in dataArray.indices) {
+                dataSetAddEntry(chartSet[y], dataArray[y][i])
+            }
+        }
+    }
 
-        val dataSet = LineDataSet(values, "heart")
+    private fun addDataSet(label: String, color: Int, fill: Boolean): LineDataSet {
+        val dataSet = LineDataSet(null, label)
         dataSet.cubicIntensity = 0.2F
         dataSet.lineWidth = 1.5f
-        dataSet.color = Color.BLACK
+        dataSet.color = color
         dataSet.setDrawCircles(false)
         dataSet.fillColor = Color.GRAY
-        dataSet.setDrawFilled(true)
+        dataSet.setDrawFilled(fill)
+        return dataSet
+    }
 
-        val lineData = LineData(dataSet)
-        chart.data = lineData
-
+    private fun dataSetAddEntry(dataSet: ILineDataSet, value: Int) {
+        if (dataSet.entryCount >= 100) {
+            dataSet.removeFirst()
+        }
+        if (dataSet.entryCount == 0) {
+            dataSet.addEntry(Entry(0f, value.toFloat()))
+            return
+        }
+        val last = dataSet.getEntryForIndex(dataSet.entryCount - 1)
+        val entry = Entry(last.x + 1, value.toFloat())
+        if (entry.x < 0) {
+            //避免溢出后为负数
+            entry.x = 0f
+        }
+        dataSet.addEntry(entry)
+        binding.lineChart.data.notifyDataChanged()
+        binding.lineChart.notifyDataSetChanged()
+        binding.lineChart.invalidate()
     }
 
     private fun addValue(value: Int) {
