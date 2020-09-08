@@ -68,12 +68,13 @@ class DataAnalyze {
             headValue2.add(data.headData[2])
         }
         headLength = BaseData.HEAD_LENGTH
+
     }
 
     private var dataPackage: BaseData? = null
     private var value:Short = 0
 
-    fun parseData(data: ByteArray): Array<Array<Int>>? {
+    fun parseData(data: ByteArray): BaseData? {
         for (b in data) {
             val byte: Short = b.toShort() and 0xFF
 //            Log.e(TAG, "status = $status byte = $byte")
@@ -135,7 +136,7 @@ class DataAnalyze {
                     trailStatus++
                     if (trailStatus >= trailLength) {
                         status = STATUS_NONE
-                        return dataPackage?.getData()
+                        return dataPackage
                     }
                 }
             }

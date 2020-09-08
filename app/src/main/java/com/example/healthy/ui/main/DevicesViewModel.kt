@@ -14,6 +14,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import java.util.logging.Handler
 
@@ -50,10 +51,10 @@ class DevicesViewModel(
     var characteristicList: MutableLiveData<List<BluetoothGattCharacteristic>> =
         MutableLiveData(ArrayList())
 
-    var readData: MutableLiveData<ByteArray> = MutableLiveData(null)
+    var readData: MutableLiveData<ByteArray?> = MutableLiveData(null)
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
 
-    var resultValue: MutableLiveData<Array<Array<Int>>> = MutableLiveData()
+    var resultValue: MutableLiveData<BaseData> = MutableLiveData()
 
     /**
      * 蓝牙设备列表
