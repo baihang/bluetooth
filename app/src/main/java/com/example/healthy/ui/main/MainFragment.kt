@@ -45,7 +45,7 @@ class MainFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
         binding.mainSetting.setOnClickListener {
-            val heart = HeartOneData()
+            val heart = HeartThreeData()
             for (i in heart.bodyData.indices) {
                 heart.bodyData[i] = i.toShort()
             }
@@ -62,30 +62,34 @@ class MainFragment() : Fragment() {
     }
 
     private fun initLineChart() {
-        val chart = binding.lineChart
+        initLineChart(binding.lineChart1, addDataSet("心电 #1", colors[0], true))
+        initLineChart(binding.lineChart2, addDataSet("心电 #2", colors[1], true))
+        initLineChart(binding.lineChart3, addDataSet("心电 #3", colors[2], true))
+    }
+
+    private fun initLineChart(chart: LineChart, dataSet: LineDataSet) {
         chart.isEnabled = false
         chart.setDrawGridBackground(true)
 
         chart.data = LineData()
         chart.keepScreenOn = true
 
-        chart.invalidate()
+        chart.data.dataSets.add(dataSet)
 
+        chart.invalidate()
     }
 
     private fun addValue(data: BaseData) {
-        val chartSet = binding.lineChart.data.dataSets
         val dataArray = data.getData()
-        if (chartSet.size != dataArray.size) {
-            chartSet.clear()
-            for (i in dataArray.indices) {
-                val set = addDataSet(data.label + " #" + i, colors[i], dataArray.size == 1)
-                chartSet.add(i, set)
+        if (dataArray.size == 3) {
+            for (i in dataArray[0].indices step 3) {
+                dataSetAddEntry(binding.lineChart1, dataArray[0][i])
+                dataSetAddEntry(binding.lineChart2, dataArray[1][i])
+                dataSetAddEntry(binding.lineChart3, dataArray[2][i])
             }
-        }
-        for (i in dataArray[0].indices) {
-            for (y in dataArray.indices) {
-                dataSetAddEntry(chartSet[y], dataArray[y][i])
+        } else {
+            for (i in dataArray[0].indices) {
+                dataSetAddEntry(binding.lineChart1, dataArray[0][i])
             }
         }
     }
@@ -99,6 +103,11 @@ class MainFragment() : Fragment() {
         dataSet.fillColor = Color.GRAY
         dataSet.setDrawFilled(fill)
         return dataSet
+    }
+
+    private fun dataSetAddEntry(chart: LineChart, value: Int) {
+        val dataSet = chart.data.dataSets[0]
+        dataSetAddEntry(dataSet, value)
     }
 
     private fun dataSetAddEntry(dataSet: ILineDataSet, value: Int) {
@@ -116,9 +125,9 @@ class MainFragment() : Fragment() {
             entry.x = 0f
         }
         dataSet.addEntry(entry)
-        binding.lineChart.data.notifyDataChanged()
-        binding.lineChart.notifyDataSetChanged()
-        binding.lineChart.invalidate()
+        binding.lineChart1.data.notifyDataChanged()
+        binding.lineChart1.notifyDataSetChanged()
+        binding.lineChart1.invalidate()
     }
 
 }

@@ -7,20 +7,24 @@ class HeartThreeData : BaseData() {
 
 
     init {
-        headData = arrayOf(0xAA, 0xAB, 0x07, 0x0D)
+        headData = arrayOf(0xAA, 0xAB, 0x07, 0x0A)
         dataInit()
         valueArray = Array(3, init = {
-            arrayOf(0, 0)
+            arrayOf(0)
         })
         label = "三导联心电"
     }
 
     override fun getData(): Array<Array<Int>> {
-        for (index in bodyData.indices step 2) {
-            val value = bodyData[index].toInt().shl(8) + bodyData[index + 1]
-            valueArray[index / 2 % 3][index / 2 / 3] = value
+        for (index in bodyData.indices step 3) {
+            val value = byte2Int(bodyData[index], bodyData[index + 1], bodyData[index + 2])
+            valueArray[index / 3 % 3][index / 3 / 3] = value
         }
         return valueArray
+    }
+
+    private fun byte2Int(b1: Short, b2: Short, b3: Short): Int {
+        return b1.toInt().shl(16) + b2.toInt().shl(8) + b3
     }
 
 }
