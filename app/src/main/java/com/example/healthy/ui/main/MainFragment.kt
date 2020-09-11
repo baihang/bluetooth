@@ -108,6 +108,9 @@ class MainFragment() : Fragment() {
     private fun dataSetAddEntry(chart: LineChart, value: Int) {
         val dataSet = chart.data.dataSets[0]
         dataSetAddEntry(dataSet, value)
+        chart.data.notifyDataChanged()
+        chart.notifyDataSetChanged()
+        chart.invalidate()
     }
 
     private fun dataSetAddEntry(dataSet: ILineDataSet, value: Int) {
@@ -125,9 +128,7 @@ class MainFragment() : Fragment() {
             entry.x = 0f
         }
         dataSet.addEntry(entry)
-        binding.lineChart1.data.notifyDataChanged()
-        binding.lineChart1.notifyDataSetChanged()
-        binding.lineChart1.invalidate()
+
     }
 
 }
