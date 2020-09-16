@@ -14,25 +14,25 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <com.github.mikephil.charting.charts.LineChart
+            <com.example.healthy.chart.MyLineChart
                 android:id="@+id/line_chart_1"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
 
-            <com.github.mikephil.charting.charts.LineChart
+            <com.example.healthy.chart.MyLineChart
                 android:id="@+id/line_chart_2"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:visibility="visible"/>
+                android:visibility="gone" />
 
-            <com.github.mikephil.charting.charts.LineChart
+            <com.example.healthy.chart.MyLineChart
                 android:id="@+id/line_chart_3"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:visibility="visible"/>
+                android:visibility="gone" />
 
         </LinearLayout>
 
@@ -43,10 +43,10 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="25dp"
-            app:rippleColor="@color/colorPrimary"
             android:src="@drawable/ic_baseline_settings_24"
             app:layout_constraintBottom_toBottomOf="@id/main"
-            app:layout_constraintEnd_toEndOf="@id/main" />
+            app:layout_constraintEnd_toEndOf="@id/main"
+            app:rippleColor="@color/colorPrimary" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/main_bluetooth"
@@ -54,10 +54,10 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="15dp"
             android:layout_marginBottom="15dp"
-            app:rippleColor="@color/colorPrimary"
             android:src="@drawable/ic_baseline_bluetooth_24"
             app:layout_constraintBottom_toTopOf="@id/main_setting"
-            app:layout_constraintEnd_toEndOf="@id/main" />
+            app:layout_constraintEnd_toEndOf="@id/main"
+            app:rippleColor="@color/colorPrimary" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
