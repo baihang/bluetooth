@@ -5,14 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -22,8 +22,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthy.R
 import com.example.healthy.data.DataAnalyze
+import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.FragmentDevicesBinding
 import com.google.android.material.snackbar.Snackbar
+import java.lang.StringBuilder
 
 /**
  * @author hang
@@ -36,8 +38,6 @@ class DevicesFragment : Fragment() {
 
         private const val LIST_MODEL_DEVICES = 0
         private const val LIST_MODEL_SERVICE = 1
-
-        private const val CHARACTER_LIST = 3
     }
 
     private lateinit var binding: FragmentDevicesBinding
@@ -62,10 +62,40 @@ class DevicesFragment : Fragment() {
         return binding.root
     }
 
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.device_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        Log.e(TAG, "onOptionsItemSelected")
+        if (item.itemId == R.id.device_refresh) {
+            if (model.scanning.value == false) {
+                adapter.deviceArray.clear()
+                adapter.notifyDataSetChanged()
+            }
+            model.scanDevices(model.scanning.value == false)
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    private var adapter = DevicesAdapter()
+
+    override fun onResume() {
+        super.onResume()
+        model.scanDevices(true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        model.scanDevices(false)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val adapter = DevicesAdapter()
+        (activity as AppCompatActivity).setSupportActionBar(binding.devicesToolbar)
+        setHasOptionsMenu(true)
+
         adapter.setItemClickListener(itemClickListener)
         binding.recycleView.adapter = adapter
         binding.recycleView.layoutManager = LinearLayoutManager(activity)
@@ -73,13 +103,28 @@ class DevicesFragment : Fragment() {
         binding.devicesToolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
         }
-        binding.devicesRefresh.setOnClickListener {
-            if (model.scanning.value == false) {
-                adapter.deviceArray.clear()
-                adapter.notifyDataSetChanged()
-            }
-            model.scanDevices(model.scanning.value == false)
+
+        binding.deviceDataButton.setOnClickListener {
+            findNavController().navigateUp()
+//            val heart = HeartThreeData()
+//            for (i in heart.bodyData.indices) {
+//                heart.bodyData[i] = (Math.random() * 100).toShort()
+//            }
+//            model.resultValue.value = heart
         }
+
+        val strBuilder = StringBuilder()
+        model.resultValue.observe(viewLifecycleOwner, Observer { baseData ->
+            strBuilder.append(binding.deviceDataEt.text)
+            strBuilder.append(baseData.label).append(" : ")
+            for (value in baseData.bodyData) {
+                val hex = java.lang.Integer.toHexString(value.toInt())
+                strBuilder.append("$hex ")
+            }
+            strBuilder.append("\n")
+            binding.deviceDataEt.setText(strBuilder.toString())
+            strBuilder.clear()
+        })
 
         model.deviceLiveData.observe(viewLifecycleOwner, Observer { set ->
             for (device in set) {
@@ -96,10 +141,10 @@ class DevicesFragment : Fragment() {
                 Handler().postDelayed({
                     model.scanDevices(false)
                 }, 10000)
-                binding.devicesRefresh.startAnimation(rotateAnimator)
+//                binding.devicesRefresh.startAnimation(rotateAnimator)
 
             } else {
-                binding.devicesRefresh.clearAnimation()
+//                binding.devicesRefresh.clearAnimation()
             }
         })
 
@@ -109,16 +154,20 @@ class DevicesFragment : Fragment() {
                 BluetoothAdapter.STATE_DISCONNECTED -> {
                     adapter.listMode = LIST_MODEL_DEVICES
                     adapter.notifyDataSetChanged()
+                    binding.deviceDataButton.visibility = View.GONE
+                    binding.deviceDataEt.visibility = View.GONE
                 }
 
                 BluetoothAdapter.STATE_CONNECTED -> {
                     adapter.listMode = LIST_MODEL_SERVICE
                     adapter.notifyDataSetChanged()
+                    binding.deviceDataButton.visibility = View.VISIBLE
+                    binding.deviceDataEt.visibility = View.VISIBLE
                 }
 
                 DevicesViewModel.SERVICE_CONNECTED -> {
                     Log.e(TAG, "service connected")
-                    findNavController().navigateUp()
+//                    findNavController().navigateUp()
                 }
             }
         }

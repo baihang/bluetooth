@@ -48,10 +48,9 @@ class DevicesViewModel(
     var noticeMsg: MutableLiveData<String> = MutableLiveData()
     var serviceList: MutableLiveData<List<BluetoothGattService>> = MutableLiveData(ArrayList())
 
-    var characteristicList: MutableLiveData<List<BluetoothGattCharacteristic>> =
+    private var characteristicList: MutableLiveData<List<BluetoothGattCharacteristic>> =
         MutableLiveData(ArrayList())
 
-    var readData: MutableLiveData<ByteArray?> = MutableLiveData(null)
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
@@ -100,7 +99,7 @@ class DevicesViewModel(
 
     fun connectService(service: BluetoothGattService) {
         characteristicList.value = service.characteristics
-//        connectStatus.postValue(SERVICE_CONNECTED)
+        connectStatus.postValue(SERVICE_CONNECTED)
 
         Log.e(TAG, "service connected character = ${service.characteristics.size}")
         for (character in service.characteristics) {
@@ -138,21 +137,11 @@ class DevicesViewModel(
                 super.onCharacteristicChanged(gatt, characteristic)
                 Log.e(TAG, "onCharacteristicChanged")
                 if (characteristic?.value != null) {
-                    readData.postValue(characteristic.value)
                     val result = dataAnalyzer.parseData(characteristic.value)
                     if (result != null) {
                         resultValue.postValue(result)
                     }
                 }
-            }
-
-            override fun onCharacteristicRead(
-                gatt: BluetoothGatt?,
-                characteristic: BluetoothGattCharacteristic?,
-                status: Int
-            ) {
-                super.onCharacteristicRead(gatt, characteristic, status)
-                Log.e(TAG, "onCharacteristicRead ${readData.value?.size}")
             }
         })
     }

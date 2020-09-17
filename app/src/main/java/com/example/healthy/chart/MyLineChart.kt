@@ -13,7 +13,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 class MyLineChart : LineChart {
 
     //x轴宽度
-    val maxXAxisLength = 100
+    val maxXAxisLength = 800
 
     constructor(context: Context) : super(context)
 

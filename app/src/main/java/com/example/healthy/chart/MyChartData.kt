@@ -10,8 +10,8 @@ class MyChartData: LineData() {
     override fun calcMinMax() {
         super.calcMinMax()
         //左侧Y轴范围
-        mLeftAxisMax = 800000F
-        mLeftAxisMin = 300000F
+        mLeftAxisMax = 4284000F
+        mLeftAxisMin = 4268000F
     }
 
 
