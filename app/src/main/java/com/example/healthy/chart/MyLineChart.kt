@@ -42,7 +42,13 @@ class MyLineChart : LineChart {
             data = MyChartData()
         }
 
-        val dataSet = LineDataSet(ArrayList(100), label)
+        val value: ArrayList<Entry> = ArrayList(maxXAxisLength)
+
+        for (i in 0 until maxXAxisLength) {
+            value.add(Entry(i.toFloat(), 0F))
+        }
+
+        val dataSet = LineDataSet(value, label)
         dataSet.cubicIntensity = 0.2F
         dataSet.lineWidth = 1.5f
         dataSet.color = color
@@ -60,7 +66,7 @@ class MyLineChart : LineChart {
         super.invalidate()
     }
 
-    fun addEntry(value: Int){
+    fun addEntry(value: Int) {
         dataSetAddEntry(data.dataSets[0], value)
         invalidate()
     }

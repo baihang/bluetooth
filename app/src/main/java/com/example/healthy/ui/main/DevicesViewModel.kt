@@ -26,6 +26,7 @@ class DevicesViewModel(
 
     private var adapter: BluetoothAdapter? = null
     private var scanner: BluetoothLeScanner? = null
+    private var timeStamps: ArrayList<Long> = ArrayList(10)
 
     private fun initManager() {
         if (manager == null) {
@@ -54,6 +55,28 @@ class DevicesViewModel(
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
+
+    var timeStampLive: MutableLiveData<Long> = MutableLiveData()
+    private var timeStampCount = 0L
+
+    /**
+     * 测试时间戳
+     */
+    fun testTime(result: BaseData){
+        when {
+            timeStamps.size < 10 -> {
+                timeStamps.add(result.timeStamp)
+            }
+            timeStamps.size == 10 -> {
+                timeStamps.removeFirst()
+                timeStamps.add(result.timeStamp)
+                timeStampLive.postValue(timeStamps[9] - timeStamps[0])
+            }
+            else -> {
+                timeStamps.clear()
+            }
+        }
+    }
 
     /**
      * 蓝牙设备列表
@@ -140,6 +163,19 @@ class DevicesViewModel(
                     val result = dataAnalyzer.parseData(characteristic.value)
                     if (result != null) {
                         resultValue.postValue(result)
+                        when {
+                            timeStamps.size < 10 -> {
+                                timeStamps.add(result.timeStamp)
+                            }
+                            timeStamps.size == 10 -> {
+                                timeStamps.removeFirst()
+                                timeStamps.add(result.timeStamp)
+                                timeStampLive.postValue(timeStamps[9] - timeStamps[0])
+                            }
+                            else -> {
+                                timeStamps.clear()
+                            }
+                        }
                     }
                 }
             }

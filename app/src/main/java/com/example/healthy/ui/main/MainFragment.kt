@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
@@ -52,6 +53,8 @@ class MainFragment() : Fragment() {
                 heart.bodyData[i] = (Math.random() * 10).toShort()
             }
             viewModel.resultValue.value = heart
+            viewModel.testTime(heart)
+
         }
 
         binding.mainBluetooth.setOnClickListener {
@@ -61,6 +64,13 @@ class MainFragment() : Fragment() {
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
             addValue(data)
         }
+
+        viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
+            val data = 60000 / it / 10L
+            Log.e(TAG, "it = $it value = $data")
+            binding.mainFlow.text = "流量： $data p/s"
+        })
+
     }
 
     private fun initLineChart() {

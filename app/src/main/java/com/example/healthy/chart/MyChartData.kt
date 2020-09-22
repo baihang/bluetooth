@@ -7,12 +7,26 @@ import com.github.mikephil.charting.data.LineDataSet
 
 class MyChartData: LineData() {
 
+    var yMaxLimit = 5000000F
+    var yMinLimit = 4000000F
+
     override fun calcMinMax() {
         super.calcMinMax()
         //左侧Y轴范围
-        mLeftAxisMax = 4284000F
-        mLeftAxisMin = 4268000F
+        if(mLeftAxisMax > yMaxLimit){
+            mLeftAxisMax = yMaxLimit
+        }
+        if(mLeftAxisMin < yMinLimit){
+            mLeftAxisMin = yMinLimit
+        }
     }
 
+    fun getLeftAxisMax(): Float {
+        return mLeftAxisMax
+    }
+
+    fun getLeftAxisMin(): Float {
+        return mLeftAxisMin
+    }
 
 }

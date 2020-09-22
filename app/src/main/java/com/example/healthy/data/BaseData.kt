@@ -1,6 +1,7 @@
 package com.example.healthy.data
 
 import android.util.Log
+import java.security.Timestamp
 
 abstract class BaseData {
 
@@ -34,11 +35,13 @@ abstract class BaseData {
     lateinit var trialData: Array<Short>
     lateinit var valueArray: Array<Array<Int>>
     lateinit var label:String
+    var timeStamp: Long = 0L
 
     fun dataInit() {
         bodyData = Array(headData[3].toInt() - 1, init = { 0.toShort() })
         trialData = arrayOf(0)
         valueArray = arrayOf(Array(bodyData.size / 2, init = { 0 }))
+        timeStamp = System.currentTimeMillis()
     }
 
     open fun getData(): Array<Array<Int>> {

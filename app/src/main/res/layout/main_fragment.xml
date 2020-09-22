@@ -59,5 +59,18 @@
             app:layout_constraintEnd_toEndOf="@id/main"
             app:rippleColor="@color/colorPrimary" />
 
+        <TextView
+            android:id="@+id/main_flow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:background="#7F000000"
+            android:textColor="@color/colorAccent"
+            android:padding="3dp"
+            android:text="流量："/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
