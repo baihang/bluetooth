@@ -1,6 +1,8 @@
 package com.example.healthy.ui.main
 
-import android.bluetooth.*
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothGattService
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -12,7 +14,6 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.get
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -21,11 +22,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthy.R
-import com.example.healthy.data.DataAnalyze
-import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.FragmentDevicesBinding
 import com.google.android.material.snackbar.Snackbar
-import java.lang.StringBuilder
 
 /**
  * @author hang

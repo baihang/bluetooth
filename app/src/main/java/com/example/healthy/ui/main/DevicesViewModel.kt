@@ -68,7 +68,7 @@ class DevicesViewModel(
                 timeStamps.add(result.timeStamp)
             }
             timeStamps.size == 10 -> {
-                timeStamps.removeFirst()
+                timeStamps.removeAt(0)
                 timeStamps.add(result.timeStamp)
                 timeStampLive.postValue(timeStamps[9] - timeStamps[0])
             }
@@ -168,7 +168,7 @@ class DevicesViewModel(
                                 timeStamps.add(result.timeStamp)
                             }
                             timeStamps.size == 10 -> {
-                                timeStamps.removeFirst()
+                                timeStamps.removeAt(0)
                                 timeStamps.add(result.timeStamp)
                                 timeStampLive.postValue(timeStamps[9] - timeStamps[0])
                             }
