@@ -23,6 +23,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthy.R
 import com.example.healthy.databinding.FragmentDevicesBinding
+import com.example.healthy.utils.SharedPreferenceUtil
 import com.google.android.material.snackbar.Snackbar
 
 /**
@@ -103,12 +104,12 @@ class DevicesFragment : Fragment() {
         }
 
         binding.deviceDataButton.setOnClickListener {
+            //存储服务UUID
+            val editor = SharedPreferenceUtil.getEditor(context)
+            editor?.putString(model.device?.address, model.serviceUUID)
+            editor?.apply()
+
             findNavController().navigateUp()
-//            val heart = HeartThreeData()
-//            for (i in heart.bodyData.indices) {
-//                heart.bodyData[i] = (Math.random() * 100).toShort()
-//            }
-//            model.resultValue.value = heart
         }
 
         val strBuilder = StringBuilder()
@@ -139,10 +140,6 @@ class DevicesFragment : Fragment() {
                 Handler().postDelayed({
                     model.scanDevices(false)
                 }, 10000)
-//                binding.devicesRefresh.startAnimation(rotateAnimator)
-
-            } else {
-//                binding.devicesRefresh.clearAnimation()
             }
         })
 
@@ -179,12 +176,17 @@ class DevicesFragment : Fragment() {
                 }).show()
         }
 
-        model.serviceList.observe(viewLifecycleOwner) {
+        model.serviceList.observe(viewLifecycleOwner, Observer {
+            val shared = SharedPreferenceUtil.getSharedPreference(context)
+            val serviceUUID = shared?.getString(model.device?.address, null)
+            if (!serviceUUID.isNullOrEmpty()) {
+                Log.e(TAG, "service uuid = $serviceUUID")
+            }
             for (service in it) {
                 adapter.serviceList.add(service)
             }
             adapter.notifyDataSetChanged()
-        }
+        })
 
     }
 

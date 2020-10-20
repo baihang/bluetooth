@@ -17,6 +17,7 @@ import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
+import com.example.healthy.utils.ThreadUtil
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -77,6 +78,25 @@ class MainFragment() : Fragment() {
         binding.lineChart1.initDataSet("心电 #1", colors[0])
         binding.lineChart2.initDataSet("心电 #2", colors[1])
         binding.lineChart3.initDataSet("心电 #3", colors[2])
+    }
+
+    /**
+     * 10s保存一次
+     */
+    private var timeInterval = 0
+
+    private val timeListener =object :ThreadUtil.TimeListener{
+        override fun onClock() {
+            timeInterval++
+            if (timeInterval >= 10){
+                timeInterval = 0
+                saveToFile()
+            }
+        }
+    }
+
+    private fun saveToFile(){
+
     }
 
     private fun addValue(data: BaseData) {

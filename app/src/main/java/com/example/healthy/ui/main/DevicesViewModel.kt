@@ -40,7 +40,8 @@ class DevicesViewModel(
 
 
     private var value: Int = 0
-    private var device: BluetoothDevice? = null
+    var device: BluetoothDevice? = null
+    var serviceUUID: String? = null
     private var gatt: BluetoothGatt? = null
 
     private val dataAnalyzer: DataAnalyze by lazy { DataAnalyze() }
@@ -121,6 +122,7 @@ class DevicesViewModel(
     }
 
     fun connectService(service: BluetoothGattService) {
+        serviceUUID = service.uuid.toString()
         characteristicList.value = service.characteristics
         connectStatus.postValue(SERVICE_CONNECTED)
 
