@@ -58,16 +58,20 @@ class LocalFileUtil {
             return true
         }
 
-        fun createFile(context: Context, path: String, name: String) {
+        fun createFile(context: Context?, path: String, name: String): File? {
+            if(context == null){
+                return null
+            }
             var dir = getDirectorPath(context, path)
             if(dir.isNullOrEmpty()){
-                return
+                return null
             }
             dir += "/$name"
             val file = File(dir)
             if(!file.exists()){
                 file.createNewFile()
             }
+            return file
         }
 
     }

@@ -1,5 +1,9 @@
 package com.example.healthy.ui.main
 
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,13 +21,20 @@ import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
+import com.example.healthy.utils.LocalFileUtil
 import com.example.healthy.utils.ThreadUtil
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.android.material.snackbar.Snackbar
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStream
+import java.lang.StringBuilder
 import java.util.concurrent.CopyOnWriteArrayList
+import java.util.concurrent.TimeUnit
 
 class MainFragment() : Fragment() {
 
@@ -62,6 +73,35 @@ class MainFragment() : Fragment() {
             findNavController().navigate(R.id.action_MainFragment_to_DevicesFragment)
         }
 
+        binding.mainSaveBt.setOnClickListener {
+            if (timeInterval == -1) {
+//                开始保存
+                timeInterval = 0
+                binding.mainSaveBt.setText("结束保存")
+                ThreadUtil.getInstance()?.addTimeListener(timeListener)
+            } else {
+//                保存结束
+                binding.mainSaveBt.setText("开始保存")
+                timeInterval = -1
+                ThreadUtil.getInstance()?.removeTimeListener(timeListener)
+                saveToFile()
+                outPutStream?.close()
+                outPutStream = null
+                stringBuilder.clear()
+
+                Snackbar.make(binding.mainSaveBt, filePath ?: "", Snackbar.LENGTH_LONG)
+                    .setAction("复制", View.OnClickListener {
+                        //复制到剪切板
+                        val clipboard =
+                            context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val data =
+                            ClipData.newPlainText(ClipDescription.MIMETYPE_TEXT_PLAIN, filePath)
+                        clipboard.setPrimaryClip(data)
+                    }).show()
+            }
+//            binding.mainSaveTimeTv.text = LocalFileUtil.getDateStr()
+        }
+
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
             addValue(data)
         }
@@ -83,21 +123,48 @@ class MainFragment() : Fragment() {
     /**
      * 10s保存一次
      */
-    private var timeInterval = 0
+    private var timeInterval = -1
 
-    private val timeListener =object :ThreadUtil.TimeListener{
+    private val timeListener = object : ThreadUtil.TimeListener {
         override fun onClock() {
             timeInterval++
-            if (timeInterval >= 10){
+            if (timeInterval >= 10) {
                 timeInterval = 0
                 saveToFile()
             }
         }
     }
 
-    private fun saveToFile(){
-
+    private val stringBuilder = StringBuilder()
+    private var filePath: String? = null
+    private var outPutStream: FileOutputStream? = null
+    private fun saveToFile() {
+        Log.e(TAG, "save to file")
+        var value = ""
+        synchronized(stringBuilder) {
+            value = stringBuilder.toString()
+            stringBuilder.clear()
+        }
+        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
+        if (outPutStream == null) {
+            val file =
+                LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
+            filePath = file?.absolutePath
+            Log.e(TAG, "open file = ${file?.absolutePath}")
+            outPutStream = FileOutputStream(file)
+        }
+        outPutStream?.write(result.toByteArray())
+        outPutStream?.flush()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (outPutStream != null) {
+            outPutStream?.close()
+        }
+        ThreadUtil.getInstance()?.removeTimeListener(timeListener)
+    }
+
 
     private fun addValue(data: BaseData) {
         val dataArray = data.getData()
@@ -110,6 +177,12 @@ class MainFragment() : Fragment() {
                 binding.lineChart1.addEntry(dataArray[0][i])
                 binding.lineChart2.addEntry(dataArray[1][i])
                 binding.lineChart3.addEntry(dataArray[2][i])
+
+                if (timeInterval != -1) {
+                    stringBuilder.append(dataArray[0][i]).append(" ")
+                    stringBuilder.append(dataArray[1][i]).append(" ")
+                    stringBuilder.append(dataArray[2][i]).append(" ")
+                }
             }
         } else {
             if (binding.lineChart2.visibility == View.VISIBLE) {
@@ -119,6 +192,9 @@ class MainFragment() : Fragment() {
 
             for (i in dataArray[0].indices) {
                 binding.lineChart1.addEntry(dataArray[0][i])
+                if (timeInterval != -1) {
+                    stringBuilder.append(dataArray[0][i]).append(" ")
+                }
             }
         }
     }

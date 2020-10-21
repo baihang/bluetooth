@@ -48,10 +48,11 @@ class ThreadUtil private constructor() {
     }
 
     fun addTimeListener(listener: TimeListener) {
-        if (timeListeners.size == 0) {
-            timeListeners.add(listener)
-            addThread(timeThread)
-        }
+        timeListeners.add(listener)
+    }
+
+    fun removeTimeListener(listener: TimeListener){
+        timeListeners.remove(listener)
     }
 
     fun timingSwitch(on: Boolean) {
@@ -59,7 +60,7 @@ class ThreadUtil private constructor() {
         if (on) {
 //            threadPoolExecutor.remove(timeThread)
             threadPoolExecutor.execute(timeThread)
-        }else{
+        } else {
             timeListeners.clear()
         }
     }
@@ -70,7 +71,6 @@ class ThreadUtil private constructor() {
     private val timeThread = Runnable {
         while (timing) {
             Thread.sleep(1000)
-            Log.e(TAG, "time clock")
             for (listener in timeListeners) {
                 listener.onClock()
             }

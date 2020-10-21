@@ -59,18 +59,41 @@
             app:layout_constraintEnd_toEndOf="@id/main"
             app:rippleColor="@color/colorPrimary" />
 
-        <TextView
-            android:id="@+id/main_flow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="10dp"
-            android:background="#7F000000"
-            android:textColor="@color/colorAccent"
-            android:padding="3dp"
-            android:text="流量："/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@color/colorPrimaryDark">
+
+            <TextView
+                android:id="@+id/main_flow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="10dp"
+                android:padding="3dp"
+                android:text="流量："
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <Button
+                android:id="@+id/main_save_bt"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_centerInParent="true"
+                android:background="#00FFFFFF"
+                android:text="开始保存"
+                android:textColor="@color/black" />
+
+            <TextView
+                android:id="@+id/main_save_time_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="20dp"/>
+
+        </RelativeLayout>
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
