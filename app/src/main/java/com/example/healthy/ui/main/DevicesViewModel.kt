@@ -165,6 +165,7 @@ class DevicesViewModel(
                     val result = dataAnalyzer.parseData(characteristic.value)
                     if (result != null) {
                         resultValue.postValue(result)
+                        Log.d(TAG, "package body ${result.bodyData[0]}")
                         when {
                             timeStamps.size < 10 -> {
                                 timeStamps.add(result.timeStamp)
