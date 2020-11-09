@@ -1,5 +1,6 @@
 package com.example.healthy.ui.main
 
+import android.app.ProgressDialog
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.ClipboardManager
