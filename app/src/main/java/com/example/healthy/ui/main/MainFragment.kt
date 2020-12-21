@@ -107,7 +107,7 @@ class MainFragment() : Fragment() {
         }
 
         viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
-            val data = 60000 / it / 10L
+            val data = 10000 / it
             Log.e(TAG, "it = $it value = $data")
             binding.mainFlow.text = "流量： $data p/s"
         })
