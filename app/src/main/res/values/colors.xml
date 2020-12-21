@@ -6,4 +6,6 @@
 
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
+
+    <color name="half_transparent">#7e000000</color>
 </resources>
