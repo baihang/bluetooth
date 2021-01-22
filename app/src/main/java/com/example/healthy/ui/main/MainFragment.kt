@@ -61,7 +61,7 @@ class MainFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
         binding.mainSetting.setOnClickListener {
-            val heart = HeartThreeData()
+            val heart = HeartOneData()
             for (i in heart.bodyData.indices) {
                 heart.bodyData[i] = (Math.random() * 10).toShort()
             }
@@ -154,7 +154,7 @@ class MainFragment() : Fragment() {
             outPutStream = FileOutputStream(file)
         }
         outPutStream?.write(result.toByteArray())
-        outPutStream?.flush()
+//        outPutStream?.flush()
     }
 
     override fun onDestroy() {
