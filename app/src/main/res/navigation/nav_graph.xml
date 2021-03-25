@@ -22,4 +22,16 @@
         android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_devices" />
 
+    <fragment
+        android:id="@+id/LoginFragment"
+        android:name="com.example.healthy.ui.main.ui.login.LoginFragment"
+        android:label="@string/login_fragment_label"
+        tools:layout="@layout/fragment_login" />
+
+    <fragment
+        android:id="@+id/SettingFragment"
+        android:name="com.example.healthy.ui.main.SettingFragment"
+        android:label="@string/setting_fragment_label"
+        tools:layout="@layout/fragment_setting"/>
+
 </navigation>

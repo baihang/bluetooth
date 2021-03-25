@@ -5,7 +5,9 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -14,14 +16,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.findNavController
 import com.example.healthy.data.BluetoothBroadCastReceiver
 import com.example.healthy.ui.main.DevicesViewModel
+import com.example.healthy.utils.ActivityHook
+import com.example.healthy.utils.SharedPreferenceUtil
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var manager: BluetoothManager
-
     private lateinit var adapter: BluetoothAdapter
+
+    private val shared:SharedPreferences? by lazy { SharedPreferenceUtil.getSharedPreference(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme)
@@ -37,11 +44,21 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        if(shared?.getBoolean("isLogin", false) == false){
+            findNavController(R.id.nav_host_fragment).navigate(R.id.SettingFragment)
+        }
         if (!adapter.isEnabled) {
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             }.launch(intent)
         }
+    }
+
+    override fun attachBaseContext(newBase: Context?) {
+        super.attachBaseContext(newBase)
+
+        ActivityHook.replaceFullIns()
+//        ActivityHook.replaceInstrumentation(this)
     }
 
     private fun checkPermission() {

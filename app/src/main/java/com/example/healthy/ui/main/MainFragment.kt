@@ -1,10 +1,7 @@
 package com.example.healthy.ui.main
 
 import android.app.ProgressDialog
-import android.content.ClipData
-import android.content.ClipDescription
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.*
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -17,11 +14,13 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import com.example.healthy.ScrollingActivity
 import com.example.healthy.chart.MyChartData
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
+import com.example.healthy.utils.ActivityHook
 import com.example.healthy.utils.LocalFileUtil
 import com.example.healthy.utils.ThreadUtil
 import com.github.mikephil.charting.charts.LineChart
@@ -46,43 +45,46 @@ class MainFragment() : Fragment() {
 
 
     private val viewModel: DevicesViewModel by activityViewModels()
-    private lateinit var binding: MainFragmentBinding
+    private var binding: MainFragmentBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding = MainFragmentBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding!!.root
     }
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
-        binding.mainSetting.setOnClickListener {
-            val heart = HeartOneData()
-            for (i in heart.bodyData.indices) {
-                heart.bodyData[i] = (Math.random() * 10).toShort()
-            }
-            viewModel.resultValue.value = heart
-            viewModel.testTime(heart)
-
+        binding?.mainSetting?.setOnClickListener {
+//            val heart = HeartOneData()
+//            for (i in heart.bodyData.indices) {
+//                heart.bodyData[i] = (Math.random() * 10).toShort()
+//            }
+//            viewModel.resultValue.value = heart
+//            viewModel.testTime(heart)
+//            ActivityHook.replaceInstrumentation(activity)
+            val intent = Intent(activity, ScrollingActivity::class.java);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context?.applicationContext?.startActivity(intent)
         }
 
-        binding.mainBluetooth.setOnClickListener {
+        binding?.mainBluetooth?.setOnClickListener {
             findNavController().navigate(R.id.action_MainFragment_to_DevicesFragment)
         }
 
-        binding.mainSaveBt.setOnClickListener {
+        binding?.mainSaveBt?.setOnClickListener {
             if (timeInterval == -1) {
 //                开始保存
                 timeInterval = 0
-                binding.mainSaveBt.setText("结束保存")
+                binding?.mainSaveBt?.setText("结束保存")
                 ThreadUtil.getInstance()?.addTimeListener(timeListener)
             } else {
 //                保存结束
-                binding.mainSaveBt.setText("开始保存")
+                binding?.mainSaveBt?.setText("开始保存")
                 timeInterval = -1
                 ThreadUtil.getInstance()?.removeTimeListener(timeListener)
                 saveToFile()
@@ -90,7 +92,7 @@ class MainFragment() : Fragment() {
                 outPutStream = null
                 stringBuilder.clear()
 
-                Snackbar.make(binding.mainSaveBt, filePath ?: "", Snackbar.LENGTH_LONG)
+                Snackbar.make(binding!!.mainSaveBt, filePath ?: "", Snackbar.LENGTH_LONG)
                     .setAction("复制", View.OnClickListener {
                         //复制到剪切板
                         val clipboard =
@@ -109,15 +111,15 @@ class MainFragment() : Fragment() {
 
         viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
             val data = 10000 / it
-            binding.mainFlow.text = "流量： $data p/s"
+            binding?.mainFlow?.text = "流量： $data p/s"
         })
 
     }
 
     private fun initLineChart() {
-        binding.lineChart1.initDataSet("心电 #1", colors[0])
-        binding.lineChart2.initDataSet("心电 #2", colors[1])
-        binding.lineChart3.initDataSet("心电 #3", colors[2])
+        binding?.lineChart1?.initDataSet("心电 #1", colors[0])
+        binding?.lineChart2?.initDataSet("心电 #2", colors[1])
+        binding?.lineChart3?.initDataSet("心电 #3", colors[2])
     }
 
     /**
@@ -157,26 +159,37 @@ class MainFragment() : Fragment() {
 //        outPutStream?.flush()
     }
 
+    override fun onDetach() {
+        super.onDetach()
+        binding = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         if (outPutStream != null) {
             outPutStream?.close()
         }
         ThreadUtil.getInstance()?.removeTimeListener(timeListener)
+        binding = null
     }
 
 
     private fun addValue(data: BaseData) {
         val dataArray = data.getData()
         if (dataArray.size == 3) {
-            if (binding.lineChart2.visibility == View.GONE) {
-                binding.lineChart2.visibility = View.VISIBLE
-                binding.lineChart3.visibility = View.VISIBLE
+            if (binding?.lineChart2?.visibility == View.GONE) {
+                binding?.lineChart2?.visibility = View.VISIBLE
+                binding?.lineChart3?.visibility = View.VISIBLE
             }
             for (i in dataArray[0].indices step 3) {
-                binding.lineChart1.addEntry(dataArray[0][i])
-                binding.lineChart2.addEntry(dataArray[1][i])
-                binding.lineChart3.addEntry(dataArray[2][i])
+                binding?.lineChart1?.addEntry(dataArray[0][i])
+                binding?.lineChart2?.addEntry(dataArray[1][i])
+                binding?.lineChart3?.addEntry(dataArray[2][i])
 
                 if (timeInterval != -1) {
                     stringBuilder.append(dataArray[0][i]).append(" ")
@@ -185,13 +198,13 @@ class MainFragment() : Fragment() {
                 }
             }
         } else {
-            if (binding.lineChart2.visibility == View.VISIBLE) {
-                binding.lineChart2.visibility = View.GONE
-                binding.lineChart3.visibility = View.GONE
+            if (binding?.lineChart2?.visibility == View.VISIBLE) {
+                binding?.lineChart2?.visibility = View.GONE
+                binding?.lineChart3?.visibility = View.GONE
             }
 
             for (i in dataArray[0].indices) {
-                binding.lineChart1.addEntry(dataArray[0][i])
+                binding?.lineChart1?.addEntry(dataArray[0][i])
                 if (timeInterval != -1) {
                     stringBuilder.append(dataArray[0][i]).append(" ")
                 }

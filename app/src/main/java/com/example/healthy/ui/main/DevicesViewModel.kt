@@ -7,6 +7,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.net.wifi.aware.Characteristics
+import android.os.Handler
 import android.util.Log
 import android.widget.Toast
 import androidx.collection.ArraySet
@@ -16,7 +17,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
-import java.util.logging.Handler
 
 class DevicesViewModel(
     application: Application
