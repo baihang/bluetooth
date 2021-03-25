@@ -40,13 +40,15 @@ class MainActivity : AppCompatActivity() {
         adapter = manager.adapter
         checkPermission()
         this.lifecycle.addObserver(BluetoothBroadCastReceiver(this))
+
+        if(shared?.getBoolean("isLogin", false) == false){
+            findNavController(R.id.nav_host_fragment).navigate(R.id.LoginFragment)
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        if(shared?.getBoolean("isLogin", false) == false){
-            findNavController(R.id.nav_host_fragment).navigate(R.id.SettingFragment)
-        }
+
         if (!adapter.isEnabled) {
             val intent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
