@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,11 +16,15 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.navigation.Navigation
+import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import kotlinx.android.synthetic.main.fragment_login.*
 
 
 class LoginFragment : Fragment() {
 
+    private val TAG = "LoginFragment"
     private lateinit var loginViewModel: LoginViewModel
 
     override fun onCreateView(
@@ -39,6 +44,7 @@ class LoginFragment : Fragment() {
         val passwordEditText = view.findViewById<EditText>(R.id.password)
         val loginButton = view.findViewById<Button>(R.id.login)
         val loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
+        val signUp = view.findViewById<Button>(R.id.sign_up)
 
         loginViewModel.loginFormState.observe(this,
             Observer { loginFormState ->
@@ -46,6 +52,7 @@ class LoginFragment : Fragment() {
                     return@Observer
                 }
                 loginButton.isEnabled = loginFormState.isDataValid
+                loginButton.text = getString(R.string.action_sign_in)
                 loginFormState.usernameError?.let {
                     usernameEditText.error = getString(it)
                 }
@@ -101,6 +108,10 @@ class LoginFragment : Fragment() {
                 passwordEditText.text.toString()
             )
         }
+
+        signUp.setOnClickListener {
+            findNavController().navigate(R.id.RegisterFragment)
+        }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
@@ -110,7 +121,8 @@ class LoginFragment : Fragment() {
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
     }
 
-    private fun showLoginFailed(@StringRes errorString: Int) {
+    private fun showLoginFailed(errorString: String) {
+        Log.e(TAG, "showLoginFailed $errorString")
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, errorString, Toast.LENGTH_LONG).show()
     }

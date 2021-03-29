@@ -34,4 +34,10 @@
         android:label="@string/setting_fragment_label"
         tools:layout="@layout/fragment_setting"/>
 
+    <fragment
+        android:id="@+id/RegisterFragment"
+        android:name="com.example.healthy.ui.main.ui.login.RegisterFragment"
+        android:label="@string/register_fragment_label"
+        tools:layout="@layout/fragment_sign_up"/>
+
 </navigation>

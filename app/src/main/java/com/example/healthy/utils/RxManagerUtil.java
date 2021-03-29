@@ -54,6 +54,8 @@ public class RxManagerUtil {
                     public void onNext(@NonNull NetworkBean networkBean) {
                         if(networkBean.isSucceed){
                             listener.loadSucceed(networkBean);
+                        }else{
+                            listener.loadFailed(networkBean);
                         }
                     }
 
@@ -76,7 +78,7 @@ public class RxManagerUtil {
 
         void loadSucceed(AbstractLoadBean bean);
 
-        void loadFailed(int tag);
+        void loadFailed(AbstractLoadBean bean);
     }
 
 }

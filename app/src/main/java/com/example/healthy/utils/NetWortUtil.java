@@ -26,7 +26,7 @@ public class NetWortUtil {
 
     private final static OkHttpClient client = new OkHttpClient();
 
-    private static NetworkBean<String> post(String url, RequestBody body) throws IOException {
+    private static NetworkBean<String> post(String url, RequestBody body) {
         Request request = new Request.Builder()
                 .url(url)
                 .post(body)
@@ -37,7 +37,7 @@ public class NetWortUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return new NetworkBean<>(null);
+        return new NetworkBean<>();
     }
 
     private static NetworkBean<String> post(String url, Map<String, String> jsonParam) throws IOException {

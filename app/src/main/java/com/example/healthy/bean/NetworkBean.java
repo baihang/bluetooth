@@ -20,4 +20,10 @@ public class NetworkBean<T> extends AbstractLoadBean<T> {
         err_code = -1;
     }
 
+    public NetworkBean(){
+        err_code = -1;
+        err_msg = "访问失败";
+        isSucceed = false;
+    }
+
 }

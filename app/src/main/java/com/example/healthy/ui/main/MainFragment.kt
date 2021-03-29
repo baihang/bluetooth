@@ -74,8 +74,9 @@ class MainFragment() : Fragment() {
             Log.e(TAG, "load succeed $bean")
         }
 
-        override fun loadFailed(tag: Int) {
+        override fun loadFailed(bean: AbstractLoadBean<*>?) {
         }
+
 
     }
 
