@@ -15,8 +15,13 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
+import com.example.healthy.utils.NetWortUtil
+import com.example.healthy.utils.RxManagerUtil
+import com.example.healthy.utils.ThreadUtil
+import java.util.concurrent.LinkedBlockingQueue
 
 class DevicesViewModel(
     application: Application
@@ -36,6 +41,8 @@ class DevicesViewModel(
         }
         adapter = manager?.adapter
         scanner = adapter?.bluetoothLeScanner
+
+        ThreadUtil.getInstance()?.addThread(uploadThread)
     }
 
 
@@ -56,6 +63,8 @@ class DevicesViewModel(
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
+
+    var  dataQueue = LinkedBlockingQueue<BaseData>()
 
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
@@ -165,7 +174,7 @@ class DevicesViewModel(
                     val result = dataAnalyzer.parseData(characteristic.value)
                     if (result != null) {
                         resultValue.postValue(result)
-                        Log.d(TAG, "package body ${result.bodyData[0]}")
+                        dataQueue.add(result.clone())
                         when {
                             timeStamps.size < 10 -> {
                                 timeStamps.add(result.timeStamp)
@@ -183,6 +192,16 @@ class DevicesViewModel(
                 }
             }
         })
+    }
+
+    private val uploadThread = Runnable {
+        kotlin.run {
+            while (true){
+                val data = dataQueue.take();
+                NetWortUtil.upEcgData(data.getAllData())
+                Thread.sleep(1000)
+            }
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)

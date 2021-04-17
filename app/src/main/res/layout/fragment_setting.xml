@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,13 +9,41 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:padding="10dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/service_url"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/text_margin"
-            android:text="@string/large_text" />
+            android:hint="@string/service_url" />
+
+        <Spinner
+            android:id="@+id/limit_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:entries="@array/limit_type_array"
+            app:layout_constraintTop_toBottomOf="@id/service_url" />
+
+        <EditText
+            android:id="@+id/limit_max"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="@string/limit_max"
+            android:inputType="number"
+            app:layout_constraintTop_toBottomOf="@id/limit_type" />
+
+        <EditText
+            android:id="@+id/limit_min"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:inputType="number"
+            android:hint="@string/limit_min"
+            app:layout_constraintTop_toBottomOf="@id/limit_max" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>

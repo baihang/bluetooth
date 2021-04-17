@@ -74,7 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/mobile" />
 
     <Button
-        android:id="@+id/login"
+        android:id="@+id/sign_up"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -93,7 +93,7 @@
         app:layout_constraintVertical_bias="0.2" />
 
     <Button
-        android:id="@+id/sign_up"
+        android:id="@+id/to_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/to_login"

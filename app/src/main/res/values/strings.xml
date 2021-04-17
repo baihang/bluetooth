@@ -30,6 +30,11 @@
     <string name="invalid_username">用户名无效</string>
     <string name="invalid_password">密码不可小于5个字符</string>
     <string name="login_failed">"登录失败"</string>
+    <string name="service_url">服务器地址</string>
+    <string name="limit_type">限制类型</string>
+    <string name="limit_value">限制值</string>
+    <string name="limit_max">最大值</string>
+    <string name="limit_min">最小值</string>
     <string name="large_text">
         "Material is the metaphor.\n\n"
 
@@ -121,4 +126,10 @@
     </string>
     <string name="title_activity_scrolling">ScrollingActivity</string>
     <string name="action_settings">Settings</string>
+
+    <string-array name="limit_type_array">
+        <item>自动Y轴</item>
+        <item>范围内自动Y轴</item>
+        <item>固定Y轴</item>
+    </string-array>
 </resources>

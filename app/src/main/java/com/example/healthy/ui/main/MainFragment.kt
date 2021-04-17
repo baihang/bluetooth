@@ -58,8 +58,6 @@ class MainFragment() : Fragment() {
         return binding!!.root
     }
 
-
-
     private val loadListener:RxManagerUtil.ManagerListener = object: RxManagerUtil.ManagerListener {
         override fun loadPre(tag: Int) {
         }
@@ -97,7 +95,9 @@ class MainFragment() : Fragment() {
 //            context?.applicationContext?.startActivity(intent)
 
             //测试 Manager
-            RxManagerUtil.getInstance().load(loadListener, 1)
+//            RxManagerUtil.getInstance().load(loadListener, 1)
+
+            findNavController().navigate(R.id.SettingFragment)
         }
 
 
@@ -150,6 +150,21 @@ class MainFragment() : Fragment() {
         binding?.lineChart1?.initDataSet("心电 #1", colors[0])
         binding?.lineChart2?.initDataSet("心电 #2", colors[1])
         binding?.lineChart3?.initDataSet("心电 #3", colors[2])
+    }
+
+    private fun resetConfig(){
+        val sp = SharedPreferenceUtil.getSharedPreference(context)
+        val max = sp?.getInt(SettingViewModel.LIMIT_MAX, -1) ?: -1
+        val min = sp?.getInt(SettingViewModel.LIMIT_Min, -1) ?: -1
+        val type = sp?.getInt(SettingViewModel.LIMIT_TYPE, 0) ?: 0
+        binding?.lineChart1?.setDataSetLimit(max, min, type)
+        binding?.lineChart2?.setDataSetLimit(max, min, type)
+        binding?.lineChart3?.setDataSetLimit(max, min, type)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        resetConfig()
     }
 
     /**

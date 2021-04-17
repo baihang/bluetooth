@@ -20,6 +20,10 @@ class SharedPreferenceUtil {
             return context?.getSharedPreferences("settings", Context.MODE_PRIVATE)
         }
 
+        fun getItem(context: Context?, name: String): String?{
+            return getSharedPreference(context)?.getString(name, null)
+        }
+
     }
 
 }

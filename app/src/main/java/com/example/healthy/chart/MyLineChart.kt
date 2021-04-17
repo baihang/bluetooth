@@ -37,6 +37,14 @@ class MyLineChart : LineChart {
         keepScreenOn = true
     }
 
+    fun setDataSetLimit(max: Int, min: Int, type: Int){
+        if(data == null){
+            throw NullPointerException("MyLineChart.dataSet == null 图像数据源为空")
+        }
+        (data as MyChartData).setMaxAndMin(max, min)
+        (data as MyChartData).setLimitType(type)
+    }
+
     fun initDataSet(label: String, color: Int) {
         if (data == null) {
             data = MyChartData()

@@ -22,6 +22,8 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
+    val registerResult = MutableLiveData<LoginResult>()
+
     fun login(username: String, password: String) {
         // can be launched in a separate asynchronous job
 //        val result = loginRepository.login(username, password)
@@ -59,6 +61,10 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
             }
 
         }, 1)
+    }
+
+    fun register(nick: String, name: String, mobile: String, password: String) {
+
     }
 
     fun loginDataChanged(username: String, password: String) {

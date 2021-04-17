@@ -1,5 +1,6 @@
 package com.example.healthy.utils;
 
+import android.content.Context;
 import android.text.TextUtils;
 
 import com.example.healthy.bean.NetworkBean;
@@ -19,16 +20,27 @@ public class NetWortUtil {
 
     public static final String TAG = "NetWortUtil";
 
-    public static final String BASE_URL = "http://www.vipmember.com.cn";
+    public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn";
+
+    private static String base_url = DEFAULT_BASE_URL;
 
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
 
     private final static OkHttpClient client = new OkHttpClient();
 
+    public static void refreshUrl(Context context) {
+        base_url = SharedPreferenceUtil.Companion.getSharedPreference(context).
+                getString("url", DEFAULT_BASE_URL);
+    }
+
+    private static String getFullUrl(String url) {
+        return DEFAULT_BASE_URL + url;
+    }
+
     private static NetworkBean<String> post(String url, RequestBody body) {
         Request request = new Request.Builder()
-                .url(url)
+                .url(getFullUrl(url))
                 .post(body)
                 .build();
         try {
@@ -40,7 +52,7 @@ public class NetWortUtil {
         return new NetworkBean<>();
     }
 
-    private static NetworkBean<String> post(String url, Map<String, String> jsonParam) throws IOException {
+    public static NetworkBean<String> post(String url, Map<String, String> jsonParam) throws IOException {
         FormBody.Builder builder = new FormBody.Builder();
         for (Map.Entry<String, String> entry : jsonParam.entrySet()) {
             if (!TextUtils.isEmpty(entry.getValue())) {
@@ -52,16 +64,19 @@ public class NetWortUtil {
         return post(url, builder.build());
     }
 
-
+    public static NetworkBean<String> post(String url, String json) {
+        RequestBody body = RequestBody.create(json, JSON);
+        return post(url, body);
+    }
 
     public static NetworkBean<String> upEcgData(String param) throws IOException {
-        String url = BASE_URL + "/msg/uploadEcg";
+        String url = "/msg/uploadEcg";
         RequestBody body = RequestBody.create(JSON, param);
         return post(url, body);
     }
 
     public static NetworkBean<String> login(String phone, String pwd) throws IOException {
-        String url = BASE_URL + "/user/login";
+        String url = "/user/login";
         Map<String, String> map = new HashMap<>();
         map.put("phonenum", phone);
         map.put("password", pwd);

@@ -1,9 +1,10 @@
 package com.example.healthy.data
 
 import android.util.Log
+import java.lang.StringBuilder
 import java.security.Timestamp
 
-abstract class BaseData {
+abstract class BaseData : Cloneable{
 
     companion object {
         private const val TAG = "BaseData"
@@ -49,6 +50,31 @@ abstract class BaseData {
             valueArray[0][index / 2] = bodyData[index].toInt().shl(8) + bodyData[index + 1]
         }
         return valueArray
+    }
+
+    public override fun clone(): BaseData {
+        val it = super.clone() as BaseData
+        it.headData = this.headData.clone()
+        it.bodyData = this.bodyData.clone()
+        it.trialData = this.bodyData.clone()
+        return it
+    }
+
+    /**
+     * 获取原始数据
+     */
+    fun getAllData(): String{
+        val builder = StringBuilder()
+        for (v in headData){
+            builder.append(v)
+        }
+        for(v in bodyData){
+            builder.append(v)
+        }
+        for (v in trialData){
+            builder.append(v)
+        }
+        return builder.toString()
     }
 
 }
