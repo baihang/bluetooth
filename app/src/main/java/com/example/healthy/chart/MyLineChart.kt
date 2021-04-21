@@ -13,7 +13,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 class MyLineChart : LineChart {
 
     //x轴宽度
-    val maxXAxisLength = 800
+    var maxXAxisLength = 800
 
     constructor(context: Context) : super(context)
 
@@ -28,7 +28,9 @@ class MyLineChart : LineChart {
     override fun init() {
         super.init()
         mAxisRight.isEnabled = false
+        mAxisLeft.isEnabled = false
         xAxis.position = XAxis.XAxisPosition.BOTTOM_INSIDE
+//        xAxis.isEnabled = false
         description.isEnabled = false
         mClipValuesToContent = false
         setDrawGridBackground(true)
@@ -75,20 +77,25 @@ class MyLineChart : LineChart {
     }
 
     fun addEntry(value: Int) {
+        dataSetAddEntry(data.dataSets[0], value.toFloat())
+        invalidate()
+    }
+
+    fun addEntry(value: Float) {
         dataSetAddEntry(data.dataSets[0], value)
         invalidate()
     }
 
-    private fun dataSetAddEntry(dataSet: ILineDataSet, value: Int) {
+    private fun  dataSetAddEntry(dataSet: ILineDataSet, value: Float) {
         if (dataSet.entryCount >= maxXAxisLength) {
             dataSet.removeFirst()
         }
         if (dataSet.entryCount == 0) {
-            dataSet.addEntry(Entry(0f, value.toFloat()))
+            dataSet.addEntry(Entry(0f, value))
             return
         }
         val last = dataSet.getEntryForIndex(dataSet.entryCount - 1)
-        val entry = Entry(last.x + 1, value.toFloat())
+        val entry = Entry(last.x + 1, value)
         if (entry.x < 0) {
             //避免溢出后为负数
             entry.x = 0f

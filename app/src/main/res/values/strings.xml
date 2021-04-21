@@ -10,6 +10,7 @@
     <string name="login_fragment_label">Login Fragment</string>
     <string name="setting_fragment_label">Setting Fragment</string>
     <string name="register_fragment_label">Register Fragment</string>
+    <string name="seven_fragment_label">seven Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
 

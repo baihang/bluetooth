@@ -3,7 +3,7 @@ package com.example.healthy.data
 /**
  * 三导联心电数据
  */
-class HeartThreeData : BaseData() {
+open class HeartThreeData : BaseData() {
 
 
     init {
@@ -23,7 +23,7 @@ class HeartThreeData : BaseData() {
         return valueArray
     }
 
-    private fun byte2Int(b1: Short, b2: Short, b3: Short): Int {
+    fun byte2Int(b1: Short, b2: Short, b3: Short): Int {
         return b1.toInt().shl(16) + b2.toInt().shl(8) + b3
     }
 

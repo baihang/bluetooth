@@ -94,8 +94,17 @@ class SettingFragment : Fragment() {
 
         override fun afterTextChanged(s: Editable) {
             val editor = SharedPreferenceUtil.getEditor(context)
-            editor?.putInt(SettingViewModel.LIMIT_MAX, limit_max.text.toString().toInt())
-            editor?.putInt(SettingViewModel.LIMIT_Min, limit_min.text.toString().toInt())
+            var max = -1
+            var min = -1
+            if(limit_max.text.toString().isNotEmpty()){
+                max = limit_max.text.toString().toInt()
+            }
+            if(limit_min.text.toString().isNotEmpty()){
+                min = limit_min.text.toString().toInt()
+            }
+            editor?.putInt(SettingViewModel.LIMIT_MAX, max)
+            editor?.putInt(SettingViewModel.LIMIT_MIN, min)
+
             editor?.putString(SettingViewModel.SERVER_URL, service_url.text.toString())
             editor?.apply()
         }

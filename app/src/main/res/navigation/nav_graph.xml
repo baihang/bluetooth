@@ -40,4 +40,10 @@
         android:label="@string/register_fragment_label"
         tools:layout="@layout/fragment_sign_up"/>
 
+    <fragment
+        android:id="@+id/SevenFragment"
+        android:name="com.example.healthy.ui.main.SevenFragment"
+        android:label="@string/seven_fragment_label"
+        tools:layout="@layout/seven_fragment"/>
+
 </navigation>

@@ -43,7 +43,7 @@ class RegisterFragment : Fragment() {
 
         viewModel.registerResult.observe(viewLifecycleOwner,
             Observer<LoginResult> {
-                
+
             })
 
         to_login?.setOnClickListener {

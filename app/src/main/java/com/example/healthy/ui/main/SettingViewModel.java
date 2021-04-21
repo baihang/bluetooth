@@ -13,8 +13,8 @@ public class SettingViewModel extends ViewModel {
 
     public static String LIMIT_TYPE = "limit_type";
     public static String LIMIT_MAX = "limit_max";
-    public static String LIMIT_Min = "limit_min";
-    public static String SERVER_URL = "limit_min";
+    public static String LIMIT_MIN = "limit_min";
+    public static String SERVER_URL = "server_url";
 
     public MutableLiveData<Integer> limitType = new MutableLiveData<>();
     public MutableLiveData<String> serverUrl = new MutableLiveData<>();
@@ -25,7 +25,7 @@ public class SettingViewModel extends ViewModel {
         SharedPreferences preferences = SharedPreferenceUtil.Companion.getSharedPreference(context);
         limitType.setValue(preferences.getInt(LIMIT_TYPE, 0));
         limitMax.setValue(preferences.getInt(LIMIT_MAX, 0));
-        limitMin.setValue(preferences.getInt(LIMIT_Min, 0));
+        limitMin.setValue(preferences.getInt(LIMIT_MIN, 0));
         serverUrl.setValue(preferences.getString(SERVER_URL, NetWortUtil.DEFAULT_BASE_URL));
     }
 

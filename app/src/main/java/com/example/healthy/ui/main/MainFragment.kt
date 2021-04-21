@@ -1,9 +1,7 @@
 package com.example.healthy.ui.main
 
-import android.app.ProgressDialog
 import android.content.*
 import android.graphics.Color
-import android.net.Network
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,29 +13,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
-import com.example.healthy.ScrollingActivity
 import com.example.healthy.bean.AbstractLoadBean
-import com.example.healthy.bean.NetworkBean
-import com.example.healthy.chart.MyChartData
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
-import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.example.healthy.utils.*
-import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.data.Entry
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.google.android.material.snackbar.Snackbar
-import org.json.JSONObject
-import java.io.File
 import java.io.FileOutputStream
-import java.io.OutputStream
 import java.lang.StringBuilder
-import java.util.concurrent.CopyOnWriteArrayList
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
 
 class MainFragment() : Fragment() {
 
@@ -82,12 +65,12 @@ class MainFragment() : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
         binding?.mainSetting?.setOnClickListener {
-//            val heart = HeartOneData()
-//            for (i in heart.bodyData.indices) {
-//                heart.bodyData[i] = (Math.random() * 10).toShort()
-//            }
-//            viewModel.resultValue.value = heart
-//            viewModel.testTime(heart)
+            val heart = HeartOneData()
+            for (i in heart.bodyData.indices) {
+                heart.bodyData[i] = (Math.random() * 10).toShort()
+            }
+            viewModel.resultValue.value = heart
+            viewModel.testTime(heart)
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
 //            val intent = Intent(activity, ScrollingActivity::class.java);
@@ -96,14 +79,20 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
-
-            findNavController().navigate(R.id.SettingFragment)
         }
 
-
+        binding?.mainSetting?.setOnLongClickListener {
+            findNavController().navigate(R.id.SettingFragment)
+            true
+        }
 
         binding?.mainBluetooth?.setOnClickListener {
             findNavController().navigate(R.id.action_MainFragment_to_DevicesFragment)
+        }
+
+        binding?.mainBluetooth?.setOnLongClickListener {
+            findNavController().navigate(R.id.SevenFragment)
+            true
         }
 
         binding?.mainSaveBt?.setOnClickListener {
@@ -155,7 +144,7 @@ class MainFragment() : Fragment() {
     private fun resetConfig(){
         val sp = SharedPreferenceUtil.getSharedPreference(context)
         val max = sp?.getInt(SettingViewModel.LIMIT_MAX, -1) ?: -1
-        val min = sp?.getInt(SettingViewModel.LIMIT_Min, -1) ?: -1
+        val min = sp?.getInt(SettingViewModel.LIMIT_MIN, -1) ?: -1
         val type = sp?.getInt(SettingViewModel.LIMIT_TYPE, 0) ?: 0
         binding?.lineChart1?.setDataSetLimit(max, min, type)
         binding?.lineChart2?.setDataSetLimit(max, min, type)
