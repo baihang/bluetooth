@@ -19,6 +19,8 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private val _loginForm = MutableLiveData<LoginFormState>()
     val loginFormState: LiveData<LoginFormState> = _loginForm
 
+    val VISITOR = ""
+
     private val _loginResult = MutableLiveData<LoginResult>()
     val loginResult: LiveData<LoginResult> = _loginResult
 
@@ -34,6 +36,13 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 //        } else {
 //            _loginResult.value = LoginResult(error = R.string.login_failed)
 //        }
+
+        if(username == VISITOR && password.isNullOrEmpty()){
+            _loginResult.value = LoginResult(
+                success = LoggedInUserView(displayName = VISITOR)
+            )
+            return
+        }
 
         RxManagerUtil.getInstance().load(object : RxManagerUtil.ManagerListener {
             override fun loadPre(tag: Int) {
@@ -90,4 +99,5 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private fun isPasswordValid(password: String): Boolean {
         return password.length > 5
     }
+
 }

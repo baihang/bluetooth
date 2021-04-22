@@ -81,6 +81,14 @@ class SettingFragment : Fragment() {
         limit_max?.addTextChangedListener(afterTextChangedListener)
         limit_min?.addTextChangedListener(afterTextChangedListener)
         service_url?.addTextChangedListener(afterTextChangedListener)
+
+        login_out?.setOnClickListener {
+            viewModel.loginOut(context)
+        }
+
+        visitor?.setOnClickListener {
+            viewModel.visitor(context)
+        }
     }
 
     private val afterTextChangedListener = object : TextWatcher {

@@ -19,7 +19,10 @@ import android.widget.Toast
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import com.example.healthy.ui.main.SettingViewModel
+import com.example.healthy.utils.SharedPreferenceUtil
 import kotlinx.android.synthetic.main.fragment_login.*
+import kotlinx.coroutines.delay
 
 
 class LoginFragment : Fragment() {
@@ -46,7 +49,7 @@ class LoginFragment : Fragment() {
         val loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
         val signUp = view.findViewById<Button>(R.id.sign_up)
 
-        loginViewModel.loginFormState.observe(this,
+        loginViewModel.loginFormState.observe(viewLifecycleOwner,
             Observer { loginFormState ->
                 if (loginFormState == null) {
                     return@Observer
@@ -61,7 +64,7 @@ class LoginFragment : Fragment() {
                 }
             })
 
-        loginViewModel.loginResult.observe(this,
+        loginViewModel.loginResult.observe(viewLifecycleOwner,
             Observer { loginResult ->
                 loginResult ?: return@Observer
                 loadingProgressBar.visibility = View.GONE
@@ -112,13 +115,22 @@ class LoginFragment : Fragment() {
         signUp.setOnClickListener {
             findNavController().navigate(R.id.RegisterFragment)
         }
+
+        visitor.setOnClickListener {
+            loginViewModel.login(loginViewModel.VISITOR, "")
+        }
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
         val welcome = getString(R.string.welcome) + model.displayName
-        // TODO : initiate successful logged in experience
         val appContext = context?.applicationContext ?: return
         Toast.makeText(appContext, welcome, Toast.LENGTH_LONG).show()
+
+        val editor = SharedPreferenceUtil.getEditor(appContext)
+        editor?.putBoolean(SettingViewModel.LOGIN_STATUS, true)
+        editor?.apply()
+
+        findNavController().navigate(R.id.MainFragment)
     }
 
     private fun showLoginFailed(errorString: String) {

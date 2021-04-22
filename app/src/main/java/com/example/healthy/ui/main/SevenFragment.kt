@@ -26,6 +26,7 @@ import com.example.healthy.chart.MyLineChart
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartSevenData
+import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.SevenFragmentBinding
 import com.example.healthy.utils.*
 import com.github.mikephil.charting.charts.LineChart
@@ -75,11 +76,17 @@ class SevenFragment() : Fragment() {
         binding?.dataList?.adapter = adapter
 
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
-            addValue(data)
+            if (data is HeartThreeData) {
+                val seven = HeartSevenData()
+                seven.bodyData = data.bodyData
+                addValue(seven)
+            } else {
+                addValue(data)
+            }
         }
 
         binding?.testButton?.setOnClickListener {
-            val heart = HeartSevenData()
+            val heart = HeartThreeData()
             for (i in heart.bodyData.indices) {
                 heart.bodyData[i] = (Math.random() * 10).toShort()
             }
@@ -92,23 +99,24 @@ class SevenFragment() : Fragment() {
         }
 
     }
-    private lateinit var client:ActivityResultLauncher<String>
+
+    private lateinit var client: ActivityResultLauncher<String>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-         client = registerForActivityResult(
+        client = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback {
                 openFile(it)
             })
     }
 
-    private fun openFile(uri: Uri){
-        if(uri.path.isNullOrEmpty()){
+    private fun openFile(uri: Uri?) {
+        if (uri?.path.isNullOrEmpty()) {
             return
         }
-        val stream = FileInputStream(File(uri.encodedPath)).buffered()
-        while (stream.available() > 0){
+        val stream = FileInputStream(File(uri?.encodedPath)).buffered()
+        while (stream.available() > 0) {
             val data = stream.readBytes()
             Log.e(TAG, "read = ${data.contentToString()}")
         }
@@ -140,7 +148,6 @@ class SevenFragment() : Fragment() {
         binding = null
     }
 
-
     private fun addValue(data: BaseData) {
 //        adapter.setData(data as HeartSevenData)
 //        adapter.notifyDataSetChanged()
@@ -149,7 +156,11 @@ class SevenFragment() : Fragment() {
         }
         val values = data.getData()
         for (i in values.indices) {
-            viewList[i].addEntry(values[i][0].toFloat() / 10000)
+            when(i){
+                2 -> viewList[2].addEntry(values[6][0].toFloat() / 10000)
+                6 -> viewList[6].addEntry(values[2][0].toFloat() / 10000)
+                else -> viewList[i].addEntry(values[i][0].toFloat() / 10000)
+            }
         }
     }
 

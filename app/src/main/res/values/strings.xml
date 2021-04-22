@@ -36,6 +36,8 @@
     <string name="limit_value">限制值</string>
     <string name="limit_max">最大值</string>
     <string name="limit_min">最小值</string>
+    <string name="visitor">访客登录</string>
+    <string name="login_out">注销登录</string>
     <string name="large_text">
         "Material is the metaphor.\n\n"
 

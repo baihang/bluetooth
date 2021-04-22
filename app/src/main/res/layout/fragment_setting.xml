@@ -44,6 +44,24 @@
             android:hint="@string/limit_min"
             app:layout_constraintTop_toBottomOf="@id/limit_max" />
 
+        <Button
+            android:id="@+id/visitor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/visitor"
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintTop_toBottomOf="@id/limit_min" />
+
+        <Button
+            android:id="@+id/login_out"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/login_out"
+            android:textColor="@color/colorPrimaryDark"
+            app:layout_constraintTop_toBottomOf="@id/visitor" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>
