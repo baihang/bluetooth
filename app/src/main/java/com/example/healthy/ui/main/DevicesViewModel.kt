@@ -199,7 +199,6 @@ class DevicesViewModel(
             while (true){
                 val data = dataQueue.take();
                 NetWortUtil.upEcgData(data.getAllData())
-                Thread.sleep(1000)
             }
         }
     }

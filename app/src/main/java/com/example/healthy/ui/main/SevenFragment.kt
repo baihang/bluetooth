@@ -157,8 +157,8 @@ class SevenFragment() : Fragment() {
         val values = data.getData()
         for (i in values.indices) {
             when(i){
-                2 -> viewList[2].addEntry(values[6][0].toFloat() / 10000)
-                6 -> viewList[6].addEntry(values[2][0].toFloat() / 10000)
+//                2 -> viewList[2].addEntry(values[6][0].toFloat() / 10000)
+//                6 -> viewList[6].addEntry(values[2][0].toFloat() / 10000)
                 else -> viewList[i].addEntry(values[i][0].toFloat() / 10000)
             }
         }
@@ -180,7 +180,7 @@ class SevenFragment() : Fragment() {
             val param = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 500)
             lineChart.layoutParams = param
             lineChart.maxXAxisLength = 400
-            lineChart.initDataSet("心电", Color.RED)
+            lineChart.initDataSet(HeartSevenData.lables[viewList.size % 7], Color.RED)
             viewList.add(lineChart)
             return MyViewHolder(lineChart)
         }
