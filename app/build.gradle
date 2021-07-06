@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
 android {
@@ -12,6 +13,10 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+        }
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -33,6 +38,15 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    externalNativeBuild{
+        cmake{
+//            path=file("src/main/jni/CMakeLists.txt")
+        }
+
+    }
+    ndkVersion='21.3.6528147'
+
 }
 
 ext {
@@ -55,6 +69,7 @@ dependencies {
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
 
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.1.9'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     // Feature module Support
@@ -64,6 +79,32 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
+
+    //room
+    def room_version = "2.3.0"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
+    // To use Kotlin annotation processing tool (kapt)
+    kapt("androidx.room:room-compiler:$room_version")
+    // To use Kotlin Symbolic Processing (KSP)
+//    ksp("androidx.room:room-compiler:$room_version")
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // optional - RxJava2 support for Room
+    implementation "androidx.room:room-rxjava2:$room_version"
+
+    // optional - RxJava3 support for Room
+//    implementation "androidx.room:room-rxjava3:$room_version"
+
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    implementation "androidx.room:room-guava:$room_version"
+
+    // optional - Test helpers
+    testImplementation("androidx.room:room-testing:$room_version")
 
     // Testing Navigation
     androidTestImplementation "androidx.navigation:navigation-testing:$nav_version"

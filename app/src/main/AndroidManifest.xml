@@ -33,6 +33,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <service android:name=".utils.TestBindService"/>
+        <service android:name=".utils.TestServices"
+            android:exported="false"/>
+        <service android:name=".utils.TestMessengerService"
+            android:process="com.test.service"/>
     </application>
 
 </manifest>

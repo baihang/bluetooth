@@ -3,6 +3,7 @@ package com.example.healthy.bean;
 import java.io.IOException;
 
 import okhttp3.Response;
+import okio.Okio;
 
 public class NetworkBean<T> extends AbstractLoadBean<T> {
 

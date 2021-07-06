@@ -1,10 +1,14 @@
 package com.example.healthy.ui.main.ui.login
 
+import android.app.PendingIntent
+import android.content.*
+import android.net.Uri
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import android.os.Bundle
+import android.os.IBinder
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -20,7 +24,7 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
 import com.example.healthy.ui.main.SettingViewModel
-import com.example.healthy.utils.SharedPreferenceUtil
+import com.example.healthy.utils.*
 import kotlinx.android.synthetic.main.fragment_login.*
 import kotlinx.coroutines.delay
 
@@ -42,6 +46,10 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
+
+//        val breakpadTest = BreakpadTest()
+//        val it = breakpadTest.testMethod()
+//        Log.e(TAG, "break test return = $it")
 
         val usernameEditText = view.findViewById<EditText>(R.id.username)
         val passwordEditText = view.findViewById<EditText>(R.id.password)
@@ -117,8 +125,38 @@ class LoginFragment : Fragment() {
         }
 
         visitor.setOnClickListener {
-            loginViewModel.login(loginViewModel.VISITOR, "")
+//            testBinderService(context)
+            testMessenger(context)
+//            loginViewModel.login(loginViewModel.VISITOR, "")
         }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        activity?.registerReceiver(broadCastReceiver, IntentFilter("com.healthy.testService"))
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onDestroy() {
+        activity?.unregisterReceiver(broadCastReceiver)
+        super.onDestroy()
+    }
+
+    private val broadCastReceiver = object :BroadcastReceiver(){
+        override fun onReceive(context: Context?, intent: Intent?) {
+            Log.e(TAG, "broadCastReceiver" + intent?.extras)
+        }
+
+    }
+
+    private val connect = object :ServiceConnection{
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            Log.e(TAG, "service connected $name")
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.e(TAG, "service disconnected")
+        }
+
     }
 
     private fun updateUiWithUser(model: LoggedInUserView) {
