@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.dynamicanimation.animation.FlingAnimation
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -21,6 +22,9 @@ import com.example.healthy.utils.*
 import com.google.android.material.snackbar.Snackbar
 import java.io.FileOutputStream
 import java.lang.StringBuilder
+import java.util.*
+import java.util.concurrent.ThreadPoolExecutor
+import kotlin.collections.LinkedHashMap
 
 class MainFragment() : Fragment() {
 
@@ -71,6 +75,8 @@ class MainFragment() : Fragment() {
             }
             viewModel.resultValue.value = heart
             viewModel.testTime(heart)
+
+            anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
 //            val intent = Intent(activity, ScrollingActivity::class.java);
@@ -133,6 +139,11 @@ class MainFragment() : Fragment() {
             binding?.mainFlow?.text = "流量： $data p/s"
         })
 
+    }
+    private var alphaValue = true
+    private fun anima(){
+//        testFade(binding?.mainBluetooth, alphaValue)
+        testFling(binding?.mainBluetooth)
     }
 
     private fun initLineChart() {

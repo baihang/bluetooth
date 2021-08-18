@@ -21,6 +21,10 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    testOptions{
+        unitTests.returnDefaultValues = true
+    }
+
     buildFeatures {
         dataBinding = true
     }
@@ -79,6 +83,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
 
     implementation 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
 
     //room
     def room_version = "2.3.0"

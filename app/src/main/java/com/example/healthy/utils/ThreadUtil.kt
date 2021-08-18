@@ -20,10 +20,17 @@ class ThreadUtil private constructor() {
     // Creates a thread pool manager
     private val threadPoolExecutor: ThreadPoolExecutor = ThreadPoolExecutor(
         NUMBER_OF_CORES,       // Initial pool size
-        NUMBER_OF_CORES,       // Max pool size
+        NUMBER_OF_CORES * 2,       // Max pool size
         KEEP_ALIVE_TIME,
         KEEP_ALIVE_TIME_UNIT,
-        workQueue
+        workQueue,
+        object : ThreadFactory {
+            private var count = 1
+            override fun newThread(r: Runnable?): Thread {
+                return Thread(r, "threadUtils-${count++}")
+            }
+
+        }
     )
 
     companion object {
@@ -47,11 +54,15 @@ class ThreadUtil private constructor() {
         threadPoolExecutor.execute(runnable)
     }
 
+    fun isAlive():Int{
+        return threadPoolExecutor.activeCount
+    }
+
     fun addTimeListener(listener: TimeListener) {
         timeListeners.add(listener)
     }
 
-    fun removeTimeListener(listener: TimeListener){
+    fun removeTimeListener(listener: TimeListener) {
         timeListeners.remove(listener)
     }
 

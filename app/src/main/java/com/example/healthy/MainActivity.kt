@@ -1,6 +1,7 @@
 package com.example.healthy
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
@@ -21,6 +22,7 @@ import com.example.healthy.data.BluetoothBroadCastReceiver
 import com.example.healthy.ui.main.DevicesViewModel
 import com.example.healthy.utils.ActivityHook
 import com.example.healthy.utils.SharedPreferenceUtil
+import java.lang.StringBuilder
 import java.util.*
 
 class MainActivity : AppCompatActivity() {

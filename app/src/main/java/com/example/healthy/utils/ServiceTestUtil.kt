@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.os.Message
 import android.os.Messenger
 import android.util.Log
+import androidx.recyclerview.widget.RecyclerView
 
 fun testBinderService(context: Context?) {
     val connect = object : ServiceConnection {

@@ -121,13 +121,24 @@ class LoginFragment : Fragment() {
         }
 
         signUp.setOnClickListener {
-            findNavController().navigate(R.id.RegisterFragment)
+//            findNavController().navigate(R.id.RegisterFragment)
+            val intent = Intent(context, TestMessengerService::class.java)
+            context?.startService(intent)
+
+//            socketUtil.connectSocket()
         }
+        var socketUtil:TestSocketUtil? = null
 
         visitor.setOnClickListener {
 //            testBinderService(context)
             testMessenger(context)
 //            loginViewModel.login(loginViewModel.VISITOR, "")
+            if(socketUtil?.socketStatus == true){
+                socketUtil?.writeStr()
+            }else{
+                socketUtil = TestSocketUtil()
+            }
+
         }
     }
 

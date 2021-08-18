@@ -13,8 +13,6 @@ class MyApplication :Application(){
         ThreadUtil.getInstance()?.timingSwitch(true)
         AbstractAppDataBase.getInstance(applicationContext)
         Log.e("Application", "processor = " + Runtime.getRuntime().availableProcessors())
-        val auto = AtomicInteger()
-
     }
 
 }
