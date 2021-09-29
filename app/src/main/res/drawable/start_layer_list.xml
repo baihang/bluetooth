@@ -1,8 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/white" />
-    <item>
+    <!--    <item>-->
+    <!--        <shape>-->
+    <!--            <solid android:color="@color/colorPrimaryDark" />-->
+    <!--        </shape>-->
+    <!--    </item>-->
+
+    <item android:gravity="center">
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_baseline_bluetooth_24" />
+            android:src="@drawable/launch_image" />
+
     </item>
+
 </layer-list>

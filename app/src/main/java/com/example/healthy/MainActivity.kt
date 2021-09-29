@@ -33,6 +33,7 @@ class MainActivity : AppCompatActivity() {
     private val shared:SharedPreferences? by lazy { SharedPreferenceUtil.getSharedPreference(this) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        Thread.sleep(2000)
         setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)

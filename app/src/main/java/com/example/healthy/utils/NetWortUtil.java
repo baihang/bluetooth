@@ -3,6 +3,7 @@ package com.example.healthy.utils;
 import android.content.Context;
 import android.text.TextUtils;
 
+import com.bumptech.glide.Glide;
 import com.example.healthy.bean.NetworkBean;
 
 import org.jetbrains.annotations.NotNull;

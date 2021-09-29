@@ -22,14 +22,18 @@ class TestMessengerService : Service() {
 
     private val messenger: Messenger = Messenger(MyHandler(this))
 
-    class MyHandler(service: Service) : Handler() {
-        private var context: WeakReference<Service> = WeakReference(service)
+    companion object{
+        class MyHandler(service: Service) : Handler() {
+            private var context: WeakReference<Service> = WeakReference(service)
 
-        override fun handleMessage(msg: Message) {
-            Log.e("TestMessengerService", "handleMessage " + msg.arg1)
-            super.handleMessage(msg)
+            override fun handleMessage(msg: Message) {
+                Log.e("TestMessengerService", "handleMessage " + msg.arg1)
+                super.handleMessage(msg)
+            }
         }
     }
+
+
 
     override fun onBind(intent: Intent?): IBinder? {
         return messenger.binder

@@ -9,7 +9,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="start_theme" parent="AppTheme">
+    <style name="LaunchTheme" parent="AppTheme">
         <item name="android:windowBackground">@drawable/start_layer_list</item>
     </style>
 

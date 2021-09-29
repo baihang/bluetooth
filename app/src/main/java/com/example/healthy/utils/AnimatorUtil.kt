@@ -23,3 +23,7 @@ fun testFling(view: View?){
         start()
     }
 }
+
+fun testClassLoader(){
+
+}

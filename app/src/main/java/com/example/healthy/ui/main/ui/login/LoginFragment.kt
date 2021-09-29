@@ -13,20 +13,17 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.Toast
+import android.widget.*
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
 import com.example.healthy.ui.main.SettingViewModel
 import com.example.healthy.utils.*
 import kotlinx.android.synthetic.main.fragment_login.*
-import kotlinx.coroutines.delay
 
 
 class LoginFragment : Fragment() {
@@ -56,6 +53,20 @@ class LoginFragment : Fragment() {
         val loginButton = view.findViewById<Button>(R.id.login)
         val loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
         val signUp = view.findViewById<Button>(R.id.sign_up)
+
+//        view.setOnTouchListener(object :View.OnTouchListener{
+//            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+//                Log.e(TAG, "touch event = " + event?.action + " x = " + event?.rawX)
+//                if(event?.action!! >= 260){
+//                    Log.e(TAG, "event = " + event?.toString())
+//                }
+//                if(event?.action == MotionEvent.ACTION_DOWN){
+//                    return true
+//                }
+//                return false;
+//            }
+//        })
+
 
         loginViewModel.loginFormState.observe(viewLifecycleOwner,
             Observer { loginFormState ->
@@ -127,18 +138,34 @@ class LoginFragment : Fragment() {
 
 //            socketUtil.connectSocket()
         }
-        var socketUtil:TestSocketUtil? = null
+        var socketUtil: TestSocketUtil? = null
 
         visitor.setOnClickListener {
 //            testBinderService(context)
             testMessenger(context)
 //            loginViewModel.login(loginViewModel.VISITOR, "")
-            if(socketUtil?.socketStatus == true){
-                socketUtil?.writeStr()
-            }else{
-                socketUtil = TestSocketUtil()
-            }
 
+            ///////socket 测试
+//            if(socketUtil?.socketStatus == true){
+//                socketUtil?.writeStr()
+//            }else{
+//                socketUtil = TestSocketUtil()
+//            }
+            //////socket 测试结束
+
+//            var loader: ClassLoader? = this.javaClass.classLoader
+//            while (loader != null){
+//               Log.e(TAG, "loader = ${loader.javaClass.name}")
+//                loader = loader.parent
+//            }
+//            CustomClassLoader(context?.applicationContext).findClass("")
+
+//            val intent = Intent(activity, TestActivityA::class.java)
+            val intent = Intent(activity, TestImageLoad::class.java)
+            startActivity(intent)
+
+//            val test = TestThread()
+//            test.testThreadMax()
         }
     }
 
@@ -152,14 +179,14 @@ class LoginFragment : Fragment() {
         super.onDestroy()
     }
 
-    private val broadCastReceiver = object :BroadcastReceiver(){
+    private val broadCastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             Log.e(TAG, "broadCastReceiver" + intent?.extras)
         }
 
     }
 
-    private val connect = object :ServiceConnection{
+    private val connect = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             Log.e(TAG, "service connected $name")
         }

@@ -85,4 +85,5 @@ class TestBindService : Service() {
         Log.e(TAG, "onRebind")
         super.onRebind(intent)
     }
+
 }
