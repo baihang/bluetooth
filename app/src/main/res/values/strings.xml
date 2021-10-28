@@ -38,6 +38,12 @@
     <string name="limit_min">最小值</string>
     <string name="visitor">访客登录</string>
     <string name="login_out">注销登录</string>
+    <string name="sms_get">获取验证码</string>
+    <string name="sms_get_fail">获取验证码</string>
+    <string name="sms">手机验证码</string>
+    <string name="sms_login">验证码登录</string>
+    <string name="invalid_mobile">手机号无效</string>
+    <string name="invalid_code">请输入验证码</string>
     <string name="large_text">
         "Material is the metaphor.\n\n"
 

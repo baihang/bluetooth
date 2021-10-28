@@ -41,7 +41,7 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
+        loginViewModel = ViewModelProvider(requireActivity().viewModelStore, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
 
 //        val breakpadTest = BreakpadTest()
@@ -138,6 +138,11 @@ class LoginFragment : Fragment() {
 
 //            socketUtil.connectSocket()
         }
+
+        to_sms.setOnClickListener {
+            findNavController().navigate(R.id.LoginBySmsFragment)
+        }
+
         var socketUtil: TestSocketUtil? = null
 
         visitor.setOnClickListener {

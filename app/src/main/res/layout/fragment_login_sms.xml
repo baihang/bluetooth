@@ -12,34 +12,46 @@
     tools:context=".ui.main.ui.login.LoginFragment">
 
     <EditText
-        android:id="@+id/username"
+        android:id="@+id/mobile_et"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="96dp"
         android:layout_marginEnd="24dp"
         android:hint="@string/prompt_mobile"
-        android:inputType="textEmailAddress"
+        android:inputType="phone"
         android:selectAllOnFocus="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/password"
+        android:id="@+id/sms_et"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:hint="@string/prompt_password"
+        android:hint="@string/sms"
         android:imeActionLabel="@string/action_sign_in_short"
         android:imeOptions="actionDone"
-        android:inputType="textPassword"
+        android:inputType="number"
         android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/sms_get"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/username" />
+        app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
+
+    <Button
+        android:id="@+id/sms_get"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sms_get"
+        android:textColor="@color/black"
+        android:background="@color/colorAccent"
+        app:layout_constraintTop_toTopOf="@+id/sms_et"
+        app:layout_constraintBottom_toBottomOf="@+id/sms_et"
+        android:layout_marginEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <Button
         android:id="@+id/login"
@@ -51,47 +63,14 @@
         android:layout_marginEnd="48dp"
         android:layout_marginBottom="84dp"
         android:background="@color/colorPrimaryDark"
-        android:enabled="false"
         android:text="@string/action_sign_in"
         android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password"
+        app:layout_constraintTop_toBottomOf="@+id/mobile_et"
         app:layout_constraintVertical_bias="0.2" />
 
-    <Button
-        android:id="@+id/sign_up"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:text="@string/to_sign_up"
-        android:textColor="@color/half_transparent"
-        app:layout_constraintEnd_toEndOf="@+id/to_sms"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/to_sms"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
-
-    <Button
-        android:id="@+id/to_sms"
-        android:layout_width="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/sign_up"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="30dp"
-        android:text="@string/sms_login"
-        android:textColor="@color/black"
-        android:background="@color/colorAccent"
-        android:layout_height="wrap_content"/>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/visitor"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="20dp"
-        android:src="@drawable/ic_baseline_supervised_user_circle_24"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
     <ProgressBar
         android:id="@+id/loading"
@@ -104,8 +83,8 @@
         android:layout_marginBottom="64dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/password"
-        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintEnd_toEndOf="@+id/mobile_et"
+        app:layout_constraintStart_toStartOf="@+id/mobile_et"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.3" />
 </androidx.constraintlayout.widget.ConstraintLayout>

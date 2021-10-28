@@ -27,4 +27,9 @@ public class NetworkBean<T> extends AbstractLoadBean<T> {
         isSucceed = false;
     }
 
+    public NetworkBean(int code, String msg){
+        err_code = code;
+        err_msg = msg;
+    }
+
 }

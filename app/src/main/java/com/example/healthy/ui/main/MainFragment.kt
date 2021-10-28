@@ -75,7 +75,7 @@ class MainFragment() : Fragment() {
             }
             viewModel.resultValue.value = heart
             viewModel.testTime(heart)
-
+TokenRefreshUtil.getInstance(context).refreshToken()
             anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)

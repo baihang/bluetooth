@@ -1,21 +1,32 @@
 package com.example.healthy.utils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.bumptech.glide.Glide;
 import com.example.healthy.bean.NetworkBean;
+import com.example.healthy.bean.TokenBean;
+import com.example.healthy.bean.UserSetting;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Security;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -25,10 +36,15 @@ import okhttp3.Response;
 public class NetWortUtil {
 
     public static final String TAG = "NetWortUtil";
+    public static final String URL = "url";
+
+    private static volatile boolean tokenGetting = false;
 
     public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn";
 
-    private static String base_url = DEFAULT_BASE_URL;
+    public static final String BASE_URL_KER = "https://api.yurui1021.com";
+
+    private static String base_url = BASE_URL_KER;
 
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
@@ -38,17 +54,28 @@ public class NetWortUtil {
             .build();
 
     public static void refreshUrl(Context context) {
-        base_url = SharedPreferenceUtil.Companion.getSharedPreference(context).
-                getString("url", DEFAULT_BASE_URL);
+        base_url = SharedPreferenceUtil.Companion.getSharedPreference(context)
+                .getString("url", DEFAULT_BASE_URL);
     }
 
     private static String getFullUrl(String url) {
-        return DEFAULT_BASE_URL + url;
+        return base_url + url;
+    }
+
+    private static Headers getHeaders(){
+        Headers.Builder builder = new Headers.Builder();
+        builder.add("token", TokenRefreshUtil.getInstance().getToken());
+        return builder.build();
     }
 
     private static NetworkBean<String> post(String url, RequestBody body) {
+        return postFullUrl(getFullUrl(url), body);
+    }
+
+    private static NetworkBean<String> postFullUrl(String url, RequestBody body) {
         Request request = new Request.Builder()
-                .url(getFullUrl(url))
+                .url(url)
+                .headers(getHeaders())
                 .post(body)
                 .build();
         try {
@@ -86,9 +113,9 @@ public class NetWortUtil {
     public static final MediaType MEDIA_TYPE_MARKDOWN
             = MediaType.parse("text/x-markdown; charset=utf-8");
 
-    public static NetworkBean<String> uploadFile(String url, String path){
+    public static NetworkBean<String> uploadFile(String url, String path) {
         File file = new File(path);
-        if(file.exists() && file.length() > 0){
+        if (file.exists() && file.length() > 0) {
             return new NetworkBean<>();
         }
 
@@ -113,6 +140,52 @@ public class NetWortUtil {
         map.put("phonenum", phone);
         map.put("password", pwd);
         return post(url, map);
+    }
+
+    public static synchronized UserSetting getToken(Context context){
+        if(tokenGetting){
+            return null;
+        }
+        String url = "/token";
+        JSONObject json = new JSONObject();
+        UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, null);
+        try {
+            String salt = String.valueOf(System.currentTimeMillis());
+            String ek = TokenRefreshUtil.getMd5(userSetting.pk + salt);
+            Log.e(TAG, "ek = " + userSetting.pk + salt);
+            json.put("salt", salt);
+            json.put("ek", ek);
+            json.put("userid", userSetting.userId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        tokenGetting = true;
+        NetworkBean<String> result = post(url, json.toString());
+        tokenGetting = false;
+
+        if(result.isSucceed){
+            Log.d(TAG, "token result = " + result + " request = " + json.toString());
+            TokenBean token = JsonUtil.jsonStr2Object(result.data, TokenBean.class);
+            if(!token.success){
+                return null;
+            }
+            if(userSetting.token == null || !userSetting.token.equals(token.result.token)){
+                userSetting.token = token.result.token;
+                userSetting.tokenTime = token.result.expires + System.currentTimeMillis() / 1000;
+                userSetting.apiServer = token.result.apiserver;
+            }
+            SharedPreferences shared = SharedPreferenceUtil.Companion.getSharedPreference(context);
+            SharedPreferences.Editor editor = shared.edit();
+            editor.putString(userSetting.userName, JsonUtil.object2String(userSetting));
+            if(userSetting.apiServer.equals(shared.getString(URL, ""))){
+                base_url = userSetting.apiServer;
+                editor.putString(URL, userSetting.apiServer);
+            }
+            editor.apply();
+            Log.e(TAG, "user setting = " + JsonUtil.object2String(userSetting));
+            return userSetting;
+        }
+        return null;
     }
 
 }

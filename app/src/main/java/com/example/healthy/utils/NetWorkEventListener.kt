@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicLong
 /**
  * 监控网络请求
  */
-class NetWorkEventListener(callId: Long, startNano: Long) : EventListener() {
+class NetWorkEventListener(callId: Long, startNano: Long, val call: Call) : EventListener() {
 
     companion object {
         private const val TAG = "NetWorkEventListener"
@@ -21,7 +21,7 @@ class NetWorkEventListener(callId: Long, startNano: Long) : EventListener() {
 
             override fun create(call: Call): EventListener {
                 val callId = nextCallId.getAndIncrement()
-                return NetWorkEventListener(callId, System.nanoTime())
+                return NetWorkEventListener(callId, System.nanoTime(), call)
             }
 
         }
@@ -37,7 +37,10 @@ class NetWorkEventListener(callId: Long, startNano: Long) : EventListener() {
 
     private fun printEvent(name: String) {
         val time: Double = (System.nanoTime() - startTimeNano) / 1000000000.toDouble()
-        Log.d(TAG, "call id = $callId event = $name at $time")
+        Log.w(
+            TAG,
+            "call id = $callId event = $name at $time call usl = ${call.request().url} body = ${call.request().body}"
+        )
     }
 
     override fun callStart(call: Call) {

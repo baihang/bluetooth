@@ -46,4 +46,10 @@
         android:label="@string/seven_fragment_label"
         tools:layout="@layout/seven_fragment"/>
 
+    <fragment
+        android:id="@+id/LoginBySmsFragment"
+        android:name="com.example.healthy.ui.main.ui.login.LoginBySmsFragment"
+        android:label="Sms Fragment"
+        tools:layout="@layout/fragment_login_sms"/>
+
 </navigation>
