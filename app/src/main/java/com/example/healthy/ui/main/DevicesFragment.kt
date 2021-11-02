@@ -87,7 +87,10 @@ class DevicesFragment : Fragment() {
     override fun onPause() {
         super.onPause()
         model.scanDevices(false)
+        strBuilder.clear()
     }
+
+    private val strBuilder = StringBuilder()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -101,6 +104,7 @@ class DevicesFragment : Fragment() {
 
         binding.devicesToolbar.setNavigationOnClickListener {
             findNavController().navigateUp()
+            (this as Fragment).onStop()
         }
 
         binding.deviceDataButton.setOnClickListener {
@@ -112,7 +116,6 @@ class DevicesFragment : Fragment() {
             findNavController().navigateUp()
         }
 
-        val strBuilder = StringBuilder()
         model.resultValue.observe(viewLifecycleOwner, Observer { baseData ->
             strBuilder.append(binding.deviceDataEt.text)
             strBuilder.append(baseData.label).append(" : ")
@@ -129,13 +132,15 @@ class DevicesFragment : Fragment() {
             for (device in set) {
                 if (!adapter.deviceArray.contains(device)) {
                     adapter.deviceArray.add(device)
+                    debugInfo("设备： ${device.address}")
                 }
             }
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRangeChanged(adapter.deviceArray.size - set.size, set.size)
         })
 
         model.scanning.observe(viewLifecycleOwner, Observer { scanning ->
             Log.e(TAG, "scanning = $scanning")
+            debugInfo("扫描状态更给 ： ${if(scanning){"扫描中"}else{"扫描结束"} }")
             if (scanning) {
                 Handler().postDelayed({
                     model.scanDevices(false)
@@ -147,13 +152,15 @@ class DevicesFragment : Fragment() {
         model.connectStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
                 BluetoothAdapter.STATE_DISCONNECTED -> {
+                    debugInfo("正在扫描设备")
                     adapter.listMode = LIST_MODEL_DEVICES
                     adapter.notifyDataSetChanged()
                     binding.deviceDataButton.visibility = View.GONE
-                    binding.deviceDataEt.visibility = View.GONE
+//                    binding.deviceDataEt.visibility = View.GONE
                 }
 
                 BluetoothAdapter.STATE_CONNECTED -> {
+                    debugInfo("正在扫描服务")
                     adapter.listMode = LIST_MODEL_SERVICE
                     adapter.notifyDataSetChanged()
                     binding.deviceDataButton.visibility = View.VISIBLE
@@ -177,19 +184,21 @@ class DevicesFragment : Fragment() {
         }
 
         model.serviceList.observe(viewLifecycleOwner, Observer {
-            val shared = SharedPreferenceUtil.getSharedPreference(context)
-            val serviceUUID = shared?.getString(model.device?.address, null)
-            if (!serviceUUID.isNullOrEmpty()) {
-                Log.e(TAG, "service uuid = $serviceUUID")
-            }
             for (service in it) {
                 adapter.serviceList.add(service)
+                debugInfo("service :" + service.uuid)
             }
-            adapter.notifyDataSetChanged()
+            adapter.notifyItemRangeChanged(adapter.serviceList.size - it.size, it.size)
         })
 
     }
 
+    private fun debugInfo(str: String){
+        strBuilder.append(str).append("\n")
+        binding.deviceDataEt.setText(strBuilder.toString())
+
+        strBuilder.clear()
+    }
 
     private val itemClickListener = object : OnItemClickListener {
         override fun onClickItem(position: Int, device: BluetoothDevice) {

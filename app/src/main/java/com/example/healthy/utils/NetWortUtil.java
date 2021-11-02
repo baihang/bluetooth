@@ -129,8 +129,9 @@ public class NetWortUtil {
     }
 
     public static NetworkBean<String> upEcgData(String param) throws IOException {
-        String url = "/msg/uploadEcg";
-        RequestBody body = RequestBody.create(JSON, param);
+//        String url = "/msg/uploadEcg";
+        String url = "/uptxt/all";
+        RequestBody body = RequestBody.create(param, MEDIA_TYPE_MARKDOWN);
         return post(url, body);
     }
 
@@ -149,6 +150,9 @@ public class NetWortUtil {
         String url = "/token";
         JSONObject json = new JSONObject();
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, null);
+        if(userSetting.pk == null || userSetting.pk.isEmpty()){
+            return null;
+        }
         try {
             String salt = String.valueOf(System.currentTimeMillis());
             String ek = TokenRefreshUtil.getMd5(userSetting.pk + salt);
@@ -171,15 +175,21 @@ public class NetWortUtil {
             }
             if(userSetting.token == null || !userSetting.token.equals(token.result.token)){
                 userSetting.token = token.result.token;
-                userSetting.tokenTime = token.result.expires + System.currentTimeMillis() / 1000;
+                userSetting.tokenTime = token.result.expires + (System.currentTimeMillis() / 1000);
+                Log.e(TAG, "token expires = " + token.result.expires + " token time = " + userSetting.tokenTime);
                 userSetting.apiServer = token.result.apiserver;
             }
             SharedPreferences shared = SharedPreferenceUtil.Companion.getSharedPreference(context);
             SharedPreferences.Editor editor = shared.edit();
-            editor.putString(userSetting.userName, JsonUtil.object2String(userSetting));
+            String user_name = shared.getString(SharedPreferenceUtil.CURRENT_USER, userSetting.userName);
+            editor.putString(user_name, JsonUtil.object2String(userSetting));
             if(userSetting.apiServer.equals(shared.getString(URL, ""))){
                 base_url = userSetting.apiServer;
                 editor.putString(URL, userSetting.apiServer);
+            }
+            if(userSetting.userName != null && userSetting.userName.length() != 0 &&
+                    !shared.getString(SharedPreferenceUtil.CURRENT_USER, "").equals(userSetting.userName)){
+                editor.putString(SharedPreferenceUtil.CURRENT_USER, userSetting.userName);
             }
             editor.apply();
             Log.e(TAG, "user setting = " + JsonUtil.object2String(userSetting));

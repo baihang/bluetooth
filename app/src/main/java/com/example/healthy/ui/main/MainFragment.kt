@@ -17,6 +17,7 @@ import com.example.healthy.R
 import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
+import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.example.healthy.utils.*
 import com.google.android.material.snackbar.Snackbar
@@ -45,26 +46,6 @@ class MainFragment() : Fragment() {
         return binding!!.root
     }
 
-    private val loadListener:RxManagerUtil.ManagerListener = object: RxManagerUtil.ManagerListener {
-        override fun loadPre(tag: Int) {
-        }
-
-        override fun load(tag: Int): AbstractLoadBean<*> {
-            val result = NetWortUtil.login("123456", "123456")
-            Log.e(TAG, "result = $result")
-            return result
-        }
-
-        override fun loadSucceed(bean: AbstractLoadBean<*>?) {
-            Log.e(TAG, "load succeed $bean")
-        }
-
-        override fun loadFailed(bean: AbstractLoadBean<*>?) {
-        }
-
-
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
@@ -75,8 +56,10 @@ class MainFragment() : Fragment() {
             }
             viewModel.resultValue.value = heart
             viewModel.testTime(heart)
-TokenRefreshUtil.getInstance(context).refreshToken()
-            anima()
+
+            viewModel.testUpload(heart)
+
+//            anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
 //            val intent = Intent(activity, ScrollingActivity::class.java);

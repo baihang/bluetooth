@@ -16,11 +16,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import com.example.healthy.bean.AbstractLoadBean
+import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import com.example.healthy.utils.NetWortUtil
 import com.example.healthy.utils.RxManagerUtil
 import com.example.healthy.utils.ThreadUtil
+import java.lang.StringBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
 class DevicesViewModel(
@@ -64,7 +66,7 @@ class DevicesViewModel(
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
 
-    var  dataQueue = LinkedBlockingQueue<BaseData>()
+    var dataQueue = LinkedBlockingQueue<BaseData>()
 
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
@@ -72,7 +74,7 @@ class DevicesViewModel(
     /**
      * 测试时间戳
      */
-    fun testTime(result: BaseData){
+    fun testTime(result: BaseData) {
         when {
             timeStamps.size < 10 -> {
                 timeStamps.add(result.timeStamp)
@@ -97,7 +99,7 @@ class DevicesViewModel(
         liveData
     }
 
-    private val scanCallBack: ScanCallback = object : ScanCallback() {
+    private var scanCallBack: ScanCallback? = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
             Log.e(TAG, "onScanResult device = ${result?.device?.address}")
@@ -194,11 +196,39 @@ class DevicesViewModel(
         })
     }
 
+    public fun testUpload(result: BaseData) {
+        dataQueue.add(result)
+    }
+
+    private val strBuilder = StringBuilder()
+
     private val uploadThread = Runnable {
+
         kotlin.run {
-            while (true){
+            while (true) {
                 val data = dataQueue.take();
-                NetWortUtil.upEcgData(data.getAllData())
+                Thread.sleep(10 * 1000)
+                strBuilder.clear()
+                strBuilder.append(data.getUploadLabel())
+                strBuilder.append("\n")
+                strBuilder.append(data.timeStamp)
+                strBuilder.append("\n")
+                strBuilder.append(data.getBodyData())
+                val dates = dataQueue.toArray()
+                dataQueue.clear()
+                var count = 1
+                for (d in dates) {
+                    strBuilder.append((d as BaseData).getBodyData())
+                    count++
+                    if(count >= 200){
+                        strBuilder.append(d.timeStamp).append("\n")
+                        count = 0
+                    }
+                }
+                val result = NetWortUtil.upEcgData(strBuilder.toString())
+                if (result.isSucceed) {
+                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
+                }
             }
         }
     }

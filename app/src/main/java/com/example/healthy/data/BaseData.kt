@@ -4,7 +4,7 @@ import android.util.Log
 import java.lang.StringBuilder
 import java.security.Timestamp
 
-abstract class BaseData : Cloneable{
+abstract class BaseData : Cloneable {
 
     companion object {
         private const val TAG = "BaseData"
@@ -35,7 +35,7 @@ abstract class BaseData : Cloneable{
     lateinit var bodyData: Array<Short>
     lateinit var trialData: Array<Short>
     lateinit var valueArray: Array<Array<Int>>
-    lateinit var label:String
+    lateinit var label: String
     var timeStamp: Long = 0L
 
     fun dataInit() {
@@ -63,18 +63,32 @@ abstract class BaseData : Cloneable{
     /**
      * 获取原始数据
      */
-    fun getAllData(): String{
+    fun getAllData(): String {
         val builder = StringBuilder()
-        for (v in headData){
+        for (v in headData) {
             builder.append(v)
         }
-        for(v in bodyData){
+        for (v in bodyData) {
             builder.append(v)
         }
-        for (v in trialData){
+        for (v in trialData) {
             builder.append(v)
         }
         return builder.toString()
     }
+
+    open fun getBodyData(): String{
+        val builder = StringBuilder()
+        val body = getData()
+        for (d1 in body){
+            for(d2 in d1){
+                builder.append(d2).append(" ")
+            }
+        }
+        builder.append("\n")
+        return builder.toString()
+    }
+
+    abstract fun getUploadLabel(): String
 
 }

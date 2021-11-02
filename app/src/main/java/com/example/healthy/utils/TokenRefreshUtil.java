@@ -1,6 +1,7 @@
 package com.example.healthy.utils;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.healthy.bean.UserSetting;
 
@@ -9,7 +10,7 @@ import java.security.NoSuchAlgorithmException;
 
 public class TokenRefreshUtil {
 
-    private static volatile TokenRefreshUtil instance;
+    private static TokenRefreshUtil instance;
     private final Context context;
 
     public static TokenRefreshUtil getInstance(Context context) {
@@ -57,7 +58,8 @@ public class TokenRefreshUtil {
 
     public String getToken(){
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, "");
-        if(userSetting.token == null || userSetting.tokenTime > System.currentTimeMillis() / 1000){
+        if(userSetting.token == null || userSetting.tokenTime < (System.currentTimeMillis() / 1000)){
+            Log.e("getToken", " token " + userSetting.tokenTime + " time = " + (System.currentTimeMillis() / 1000) );
             userSetting = refreshToken();
         }
         if(userSetting == null || userSetting.token == null){

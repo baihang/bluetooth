@@ -9,4 +9,8 @@ class PulseData : BaseData(){
         label = "脉搏"
     }
 
+    override fun getUploadLabel(): String {
+        return "_mb"
+    }
+
 }

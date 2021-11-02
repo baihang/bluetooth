@@ -11,6 +11,10 @@ class HeartSevenData : HeartThreeData() {
 
     }
 
+    override fun getUploadLabel(): String {
+        return "_ql"
+    }
+
     companion object{
         val lables = arrayOf("Ⅰ", "aVR", "Ⅱ", "aVL", "Ⅲ", "aVF", "V")
     }

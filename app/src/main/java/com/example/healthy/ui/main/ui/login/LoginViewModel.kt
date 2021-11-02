@@ -147,7 +147,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private fun getSmsSuccess(result: String) {
         val smsBean = JsonUtil.jsonStr2Object(result, SmsBean::class.java)
         if (smsBean != null && smsBean.success) {
-            smsStatus.postValue(smsBean)
+            smsStatus.value = smsBean
         } else {
             _loginForm.value = LoginFormState(usernameError = R.string.sms_get_fail)
         }

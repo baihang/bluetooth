@@ -15,6 +15,10 @@ open class HeartThreeData : BaseData() {
         label = "三导联心电"
     }
 
+    override fun getUploadLabel(): String {
+        return "_sl"
+    }
+
     override fun getData(): Array<Array<Int>> {
         for (index in bodyData.indices step 3) {
             val value = byte2Int(bodyData[index], bodyData[index + 1], bodyData[index + 2])

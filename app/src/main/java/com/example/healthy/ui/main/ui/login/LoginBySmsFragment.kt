@@ -55,19 +55,19 @@ class LoginBySmsFragment : Fragment() {
             val st = SharedPreferenceUtil.getItem(context, mobile)
             val user = JsonUtil.jsonStr2Object(st, UserSetting::class.java)
             if (user == null) {
-                Snackbar.make(TextView(context), "请重新获取验证码！", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(this.requireView(), "请重新获取验证码！", Snackbar.LENGTH_LONG).show()
             } else {
                 viewModel.loginBySms(mobile, sms_et.text.toString(), user.vk)
             }
         }
 
-        if (Build.VERSION.SDK_INT > 29) {
-            val cutout: MutableList<Rect> =
-                WindowInsets.Builder().build().displayCutout?.boundingRects ?: return
-            for (r in cutout) {
-                Log.e(TAG, "cut out = $r")
-            }
-        }
+//        if (Build.VERSION.SDK_INT > 29) {
+//            val cutout: MutableList<Rect> =
+//                WindowInsets.Builder().build().displayCutout?.boundingRects ?: return
+//            for (r in cutout) {
+//                Log.e(TAG, "cut out = $r")
+//            }
+//        }
 
         mobile_et.setText(viewModel.userName)
 

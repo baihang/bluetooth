@@ -12,7 +12,7 @@ import java.io.OutputStream;
  */
 public class LogUtil {
     private static final String TAG = "LogUtil";
-    private volatile static LogUtil logUtil;
+    private static LogUtil logUtil;
 
     public static LogUtil getInstance(File file) throws IOException {
         if (logUtil == null) {

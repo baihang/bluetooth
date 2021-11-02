@@ -7,7 +7,6 @@ import android.util.Log
 import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.utils.ThreadUtil
 import com.example.healthy.utils.TokenRefreshUtil
-import java.util.concurrent.atomic.AtomicInteger
 
 class MyApplication :Application(){
 
