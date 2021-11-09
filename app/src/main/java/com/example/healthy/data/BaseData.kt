@@ -24,6 +24,9 @@ abstract class BaseData : Cloneable {
                 0xAB07 -> {
                     HeartThreeData()
                 }
+                0xDA07 -> {
+                    HeartSixData()
+                }
                 else -> {
                     null
                 }

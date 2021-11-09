@@ -117,15 +117,16 @@ class DevicesFragment : Fragment() {
         }
 
         model.resultValue.observe(viewLifecycleOwner, Observer { baseData ->
-            strBuilder.append(binding.deviceDataEt.text)
-            strBuilder.append(baseData.label).append(" : ")
-            for (value in baseData.bodyData) {
-                val hex = java.lang.Integer.toHexString(value.toInt())
-                strBuilder.append("$hex ")
-            }
-            strBuilder.append("\n")
-            binding.deviceDataEt.setText(strBuilder.toString())
-            strBuilder.clear()
+//            strBuilder.append(binding.deviceDataEt.text)
+//            strBuilder.append(baseData.label).append(" : ")
+//            for (value in baseData.bodyData) {
+//                val hex = java.lang.Integer.toHexString(value.toInt())
+//                strBuilder.append("$hex ")
+//            }
+//            strBuilder.append("\n")
+//            binding.deviceDataEt.setText(strBuilder.toString())
+//            strBuilder.clear()
+            debugInfo("收到数据：${baseData.label}")
         })
 
         model.deviceLiveData.observe(viewLifecycleOwner, Observer { set ->
@@ -135,7 +136,7 @@ class DevicesFragment : Fragment() {
                     debugInfo("设备： ${device.address}")
                 }
             }
-            adapter.notifyItemRangeChanged(adapter.deviceArray.size - set.size, set.size)
+            adapter.notifyDataSetChanged()
         })
 
         model.scanning.observe(viewLifecycleOwner, Observer { scanning ->
@@ -188,7 +189,7 @@ class DevicesFragment : Fragment() {
                 adapter.serviceList.add(service)
                 debugInfo("service :" + service.uuid)
             }
-            adapter.notifyItemRangeChanged(adapter.serviceList.size - it.size, it.size)
+            adapter.notifyDataSetChanged()
         })
 
     }
@@ -202,11 +203,12 @@ class DevicesFragment : Fragment() {
 
     private val itemClickListener = object : OnItemClickListener {
         override fun onClickItem(position: Int, device: BluetoothDevice) {
-            Log.e(TAG, "click listener position = $position")
+            debugInfo("连接中： " + device.address)
             model.connectDevices(device)
         }
 
         override fun connectService(position: Int, service: BluetoothGattService) {
+            debugInfo("连接服务： " + service.uuid)
             model.connectService(service)
         }
 

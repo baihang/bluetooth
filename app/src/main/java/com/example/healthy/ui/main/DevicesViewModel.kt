@@ -113,6 +113,9 @@ class DevicesViewModel(
      * 扫描设备
      */
     fun scanDevices(enable: Boolean) {
+        if(scanning.value == enable){
+            return
+        }
         if (scanner == null) {
             initManager()
         }
@@ -125,6 +128,7 @@ class DevicesViewModel(
                 return
             }
             deviceLiveData.value?.clear()
+            connectStatus.postValue(BluetoothAdapter.STATE_DISCONNECTED)
             scanner?.startScan(scanCallBack)
         } else {
             scanner?.stopScan(scanCallBack)
@@ -144,6 +148,7 @@ class DevicesViewModel(
     }
 
     fun connectDevices(device: BluetoothDevice) {
+        scanDevices(false)
         this.device = device
         gatt = device.connectGatt(getApplication(), true, object : BluetoothGattCallback() {
 
@@ -225,9 +230,10 @@ class DevicesViewModel(
                         count = 0
                     }
                 }
+                strBuilder.append((dates[dates.size-1] as BaseData).timeStamp)
                 val result = NetWortUtil.upEcgData(strBuilder.toString())
                 if (result.isSucceed) {
-                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
+//                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
                 }
             }
         }

@@ -111,6 +111,8 @@ dependencies {
     // optional - Guava support for Room, including Optional and ListenableFuture
     implementation "androidx.room:room-guava:$room_version"
 
+    implementation "com.tencent.bugly:crashreport:latest.release"
+
     // optional - Test helpers
     testImplementation("androidx.room:room-testing:$room_version")
 

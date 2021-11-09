@@ -11,20 +11,25 @@ import androidx.dynamicanimation.animation.FlingAnimation
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.ReportFragment
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
 import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartOneData
+import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.example.healthy.utils.*
 import com.google.android.material.snackbar.Snackbar
+import com.tencent.bugly.crashreport.CrashReport
+import okhttp3.internal.wait
 import java.io.FileOutputStream
 import java.lang.StringBuilder
 import java.util.*
 import java.util.concurrent.ThreadPoolExecutor
+import java.util.concurrent.locks.ReentrantLock
 import kotlin.collections.LinkedHashMap
 
 class MainFragment() : Fragment() {
@@ -46,18 +51,53 @@ class MainFragment() : Fragment() {
         return binding!!.root
     }
 
+    private val lock = ReentrantLock()
+    private val condition = lock.newCondition()
+
+    private var testThread = Thread() {
+        kotlin.run {
+            lock.lock()
+            while (true) {
+                while (testThreadRunning) {
+                    val heart = HeartThreeData()
+                    for (i in heart.bodyData.indices) {
+                        heart.bodyData[i] = (Math.random() * 10).toShort()
+//                heart.bodyData[i] = i.toShort()
+                    }
+                    viewModel.resultValue.postValue(heart)
+                    viewModel.testTime(heart)
+
+                    viewModel.testUpload(heart)
+                    Thread.sleep(5)
+                }
+                condition.await()
+            }
+            lock.unlock()
+        }
+    }
+
+    @Volatile
+    private var testThreadRunning = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        testThread.start()
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
-        binding?.mainSetting?.setOnClickListener {
-            val heart = HeartOneData()
-            for (i in heart.bodyData.indices) {
-                heart.bodyData[i] = (Math.random() * 10).toShort()
-            }
-            viewModel.resultValue.value = heart
-            viewModel.testTime(heart)
 
-            viewModel.testUpload(heart)
+        binding?.mainSetting?.setOnClickListener {
+            if (!testThreadRunning) {
+                testThreadRunning = true
+                lock.lock()
+                condition.signalAll()
+                lock.unlock()
+            } else {
+                testThreadRunning = false
+            }
+
 
 //            anima()
             //测试跳转 Hook
@@ -123,8 +163,9 @@ class MainFragment() : Fragment() {
         })
 
     }
+
     private var alphaValue = true
-    private fun anima(){
+    private fun anima() {
 //        testFade(binding?.mainBluetooth, alphaValue)
         testFling(binding?.mainBluetooth)
     }
@@ -135,7 +176,7 @@ class MainFragment() : Fragment() {
         binding?.lineChart3?.initDataSet("心电 #3", colors[2])
     }
 
-    private fun resetConfig(){
+    private fun resetConfig() {
         val sp = SharedPreferenceUtil.getSharedPreference(context)
         val max = sp?.getInt(SettingViewModel.LIMIT_MAX, -1) ?: -1
         val min = sp?.getInt(SettingViewModel.LIMIT_MIN, -1) ?: -1

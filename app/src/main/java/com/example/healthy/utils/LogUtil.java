@@ -1,6 +1,10 @@
 package com.example.healthy.utils;
 
+import android.content.Context;
+import android.os.Environment;
 import android.util.Log;
+
+import androidx.core.content.ContextCompat;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -23,6 +27,13 @@ public class LogUtil {
             }
         }
         return logUtil;
+    }
+
+    public static LogUtil getInstance(Context context) throws IOException {
+        String path = ContextCompat.getExternalFilesDirs(context, Environment.DIRECTORY_DOCUMENTS)[0].getPath();
+        //创建日志目录
+        return getInstance(new File(path+"/log.txt"));
+
     }
 
     private final class StringNode {
@@ -85,7 +96,7 @@ public class LogUtil {
                                     return;
                                 }
                                 Log.e(TAG, "write thread is blocking");
-                                appendLock.wait(1000);
+                                appendLock.wait();
                             }else{
                                 toWrite = head.val;
                                 head = head.next;
