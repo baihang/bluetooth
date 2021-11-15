@@ -9,33 +9,53 @@
         android:layout_height="match_parent"
         tools:context=".ui.main.MainFragment">
 
-        <LinearLayout
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:layout_height="match_parent">
 
-            <com.example.healthy.chart.MyLineChart
-                android:id="@+id/line_chart_1"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-            <com.example.healthy.chart.MyLineChart
-                android:id="@+id/line_chart_2"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:visibility="gone" />
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
 
-            <com.example.healthy.chart.MyLineChart
-                android:id="@+id/line_chart_3"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:visibility="gone" />
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:visibility="gone" />
 
-        </LinearLayout>
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_3"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:visibility="gone" />
 
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_4"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:visibility="gone" />
+
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_5"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:visibility="gone" />
+
+                <com.example.healthy.chart.MyLineChart
+                    android:id="@+id/line_chart_6"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+        </ScrollView>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/main_setting"

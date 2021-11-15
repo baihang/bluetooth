@@ -10,7 +10,7 @@ class HeartSixData : HeartThreeData() {
         valueArray = Array(6, init = {
             Array(50, init = {0})
         })
-        bodyData = Array(900, init = { 0.toShort() })
+        bodyData = Array(900, init = { 0 })
     }
 
     override fun getUploadLabel(): String {

@@ -33,12 +33,14 @@ public class SettingViewModel extends ViewModel {
 
     public void loginOut(Context context){
         SharedPreferences.Editor editor = SharedPreferenceUtil.Companion.getEditor(context);
+        assert editor != null;
         editor.putBoolean(LOGIN_STATUS, false);
         editor.apply();
     }
 
     public void visitor(Context context){
         SharedPreferences.Editor editor = SharedPreferenceUtil.Companion.getEditor(context);
+        assert editor != null;
         editor.putBoolean(LOGIN_STATUS, true);
         editor.apply();
     }

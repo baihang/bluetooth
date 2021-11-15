@@ -22,7 +22,6 @@
                 app:navigationIcon="@drawable/ic_detail_back_no_circle"
                 app:title="蓝牙设备">
 
-
             </com.google.android.material.appbar.MaterialToolbar>
 
         </com.google.android.material.appbar.AppBarLayout>

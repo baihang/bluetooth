@@ -141,4 +141,6 @@
         <item>范围内自动Y轴</item>
         <item>固定Y轴</item>
     </string-array>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

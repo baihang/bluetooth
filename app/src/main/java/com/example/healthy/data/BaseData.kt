@@ -8,11 +8,11 @@ abstract class BaseData : Cloneable {
 
     companion object {
         private const val TAG = "BaseData"
-        const val HEAD: Short = 0xAA
+        const val HEAD: Int = 0xAA
         const val HEAD_LENGTH = 4
 
-        fun getDataType(value1: Short, value2: Short): BaseData? {
-            val type: Int = value1.toInt().shl(8) + value2
+        fun getDataType(value1: Int, value2: Int): BaseData? {
+            val type: Int = value1.shl(8) + value2
 //            Log.e(TAG, "type = $type")
             return when (type) {
                 0xAA07 -> {
@@ -34,15 +34,15 @@ abstract class BaseData : Cloneable {
         }
     }
 
-    lateinit var headData: Array<Short>
-    lateinit var bodyData: Array<Short>
-    lateinit var trialData: Array<Short>
+    lateinit var headData: Array<Int>
+    lateinit var bodyData: Array<Int>
+    lateinit var trialData: Array<Int>
     lateinit var valueArray: Array<Array<Int>>
     lateinit var label: String
     var timeStamp: Long = 0L
 
     fun dataInit() {
-        bodyData = Array(headData[3].toInt() - 1, init = { 0.toShort() })
+        bodyData = Array(headData[3] - 1, init = { 0 })
         trialData = arrayOf(0)
         valueArray = arrayOf(Array(bodyData.size / 2, init = { 0 }))
         timeStamp = System.currentTimeMillis()
@@ -50,7 +50,7 @@ abstract class BaseData : Cloneable {
 
     open fun getData(): Array<Array<Int>> {
         for (index in bodyData.indices step 2) {
-            valueArray[0][index / 2] = bodyData[index].toInt().shl(8) + bodyData[index + 1]
+            valueArray[0][index / 2] = bodyData[index].shl(8) + bodyData[index + 1]
         }
         return valueArray
     }

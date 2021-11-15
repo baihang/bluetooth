@@ -23,6 +23,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.healthy.R
 import com.example.healthy.databinding.FragmentDevicesBinding
+import com.example.healthy.utils.AbstractBluetooth
+import com.example.healthy.utils.NormalBluetooth
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.google.android.material.snackbar.Snackbar
 
@@ -72,7 +74,12 @@ class DevicesFragment : Fragment() {
                 adapter.deviceArray.clear()
                 adapter.notifyDataSetChanged()
             }
-            model.scanDevices(model.scanning.value == false)
+            model.scanDevices(model.scanning.value == false, activity)
+        }else if(item.itemId == R.id.device_change){
+            adapter.deviceArray.clear()
+            adapter.notifyDataSetChanged()
+            model.deviceChange(activity)
+            binding.devicesToolbar.title = model.getDeviceType()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -81,12 +88,12 @@ class DevicesFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        model.scanDevices(true)
+        model.scanDevices(true, activity)
     }
 
     override fun onPause() {
         super.onPause()
-        model.scanDevices(false)
+        model.scanDevices(false, activity)
         strBuilder.clear()
     }
 
@@ -97,6 +104,7 @@ class DevicesFragment : Fragment() {
 
         (activity as AppCompatActivity).setSupportActionBar(binding.devicesToolbar)
         setHasOptionsMenu(true)
+        binding.devicesToolbar.title = model.getDeviceType()
 
         adapter.setItemClickListener(itemClickListener)
         binding.recycleView.adapter = adapter
@@ -133,7 +141,7 @@ class DevicesFragment : Fragment() {
             for (device in set) {
                 if (!adapter.deviceArray.contains(device)) {
                     adapter.deviceArray.add(device)
-                    debugInfo("设备： ${device.address}")
+                    debugInfo("设备： ${device?.address ?: "虚拟设备"}")
                 }
             }
             adapter.notifyDataSetChanged()
@@ -144,11 +152,10 @@ class DevicesFragment : Fragment() {
             debugInfo("扫描状态更给 ： ${if(scanning){"扫描中"}else{"扫描结束"} }")
             if (scanning) {
                 Handler().postDelayed({
-                    model.scanDevices(false)
+                    model.scanDevices(false, activity)
                 }, 10000)
             }
         })
-
 
         model.connectStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
@@ -168,9 +175,16 @@ class DevicesFragment : Fragment() {
                     binding.deviceDataEt.visibility = View.VISIBLE
                 }
 
-                DevicesViewModel.SERVICE_CONNECTED -> {
+                AbstractBluetooth.STATUS_CONNECTED_SUCCESS -> {
                     Log.e(TAG, "service connected")
+                    debugInfo("成功连接设备")
 //                    findNavController().navigateUp()
+                }
+                AbstractBluetooth.STATUS_ERROR -> {
+                    debugInfo("连接设备出错")
+                }
+                else -> {
+                    debugInfo("status info $status (大于10为收到数据包长度)")
                 }
             }
         }
@@ -183,6 +197,10 @@ class DevicesFragment : Fragment() {
                     }.launch(intent)
                 }).show()
         }
+
+        model.logInfo.observe(viewLifecycleOwner, Observer {
+            debugInfo(it)
+        })
 
         model.serviceList.observe(viewLifecycleOwner, Observer {
             for (service in it) {
@@ -202,8 +220,8 @@ class DevicesFragment : Fragment() {
     }
 
     private val itemClickListener = object : OnItemClickListener {
-        override fun onClickItem(position: Int, device: BluetoothDevice) {
-            debugInfo("连接中： " + device.address)
+        override fun onClickItem(position: Int, device: BluetoothDevice?) {
+            debugInfo("连接中： " + device?.address ?: "虚拟设备")
             model.connectDevices(device)
         }
 
@@ -249,7 +267,7 @@ class DevicesFragment : Fragment() {
 
             holder.layout?.setOnClickListener {
                 if (listMode == LIST_MODEL_DEVICES) {
-                    listener?.onClickItem(position, deviceArray[position])
+                    listener?.onClickItem(position, deviceArray.get(position))
                 } else {
                     listener?.connectService(position, serviceList[position])
                 }
@@ -276,7 +294,7 @@ class DevicesFragment : Fragment() {
     }
 
     interface OnItemClickListener {
-        fun onClickItem(position: Int, device: BluetoothDevice)
+        fun onClickItem(position: Int, device: BluetoothDevice?)
         fun connectService(position: Int, service: BluetoothGattService)
     }
 

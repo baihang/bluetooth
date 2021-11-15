@@ -38,7 +38,8 @@ class DataAnalyze {
         private val dataArrayList: Array<BaseData> = arrayOf(
             HeartOneData(),
             HeartThreeData(),
-            PulseData()
+            PulseData(),
+            HeartSixData(),
         )
     }
 
@@ -59,8 +60,8 @@ class DataAnalyze {
 
     private var dataModel = DATA_MODEL_NONE
 
-    private var headValue1: ArraySet<Short> = ArraySet()
-    private var headValue2: ArraySet<Short> = ArraySet()
+    private var headValue1: ArraySet<Int> = ArraySet()
+    private var headValue2: ArraySet<Int> = ArraySet()
 
     init {
         for (data in dataArrayList) {
@@ -72,11 +73,11 @@ class DataAnalyze {
     }
 
     private var dataPackage: BaseData? = null
-    private var value:Short = 0
+    private var value:Int = 0
 
     fun parseData(data: ByteArray): BaseData? {
         for (b in data) {
-            val byte: Short = b.toShort() and 0xFF
+            val byte: Int = b.toInt() and 0xFF
 //            Log.e(TAG, "status = $status byte = $byte")
             when (status) {
                 STATUS_NONE -> {

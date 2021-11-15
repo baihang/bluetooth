@@ -1,5 +1,6 @@
 package com.example.healthy.ui.main
 
+import android.app.Activity
 import android.app.Application
 import android.bluetooth.*
 import android.bluetooth.le.BluetoothLeScanner
@@ -19,9 +20,7 @@ import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
-import com.example.healthy.utils.NetWortUtil
-import com.example.healthy.utils.RxManagerUtil
-import com.example.healthy.utils.ThreadUtil
+import com.example.healthy.utils.*
 import java.lang.StringBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -29,29 +28,22 @@ class DevicesViewModel(
     application: Application
 ) : AndroidViewModel(application) {
 
-    private var manager: BluetoothManager? = null
-
-    private var adapter: BluetoothAdapter? = null
-    private var scanner: BluetoothLeScanner? = null
-    private var timeStamps: ArrayList<Long> = ArrayList(10)
-
-    private fun initManager() {
-        if (manager == null) {
-            manager =
-                getApplication<Application>().getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-
-        }
-        adapter = manager?.adapter
-        scanner = adapter?.bluetoothLeScanner
-
-        ThreadUtil.getInstance()?.addThread(uploadThread)
+    companion object {
+        private const val TAG = "DevicesViewModel"
     }
 
+    private var timeStamps: ArrayList<Long> = ArrayList(10)
+
+    /**
+     * true ble
+     * false normal
+     */
+    private var bleOrNormal = false
+    private var bluetooth: AbstractBluetooth? = null
 
     private var value: Int = 0
     var device: BluetoothDevice? = null
     var serviceUUID: String? = null
-    private var gatt: BluetoothGatt? = null
 
     private val dataAnalyzer: DataAnalyze by lazy { DataAnalyze() }
 
@@ -66,10 +58,66 @@ class DevicesViewModel(
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
 
+    var logInfo: MutableLiveData<String> = MutableLiveData()
+
     var dataQueue = LinkedBlockingQueue<BaseData>()
 
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
+
+    private val DEBUG = false
+    private val isUploadData = false
+
+    private fun initManager() {
+        bluetooth = if (bleOrNormal) {
+            BleBluetooth
+        } else {
+            NormalBluetooth
+        }
+        if(DEBUG){
+            bluetooth = VirtualBluetooth
+        }
+        bluetooth?.baseInit(getApplication())
+        AbstractBluetooth.listener = object : AbstractBluetooth.BluetoothListener {
+            override fun onDeviceFound(device: BluetoothDevice?) {
+                Log.e(TAG, "device found = ${device?.address}")
+                val list = deviceLiveData.value
+                list?.add(device)
+                deviceLiveData.postValue(list)
+            }
+
+            override fun onDeviceStatusChange(status: Int) {
+                connectStatus.postValue(status)
+            }
+
+            override fun onDataReceive(bytes: ByteArray, len: Int) {
+                receivedData(bytes.copyOfRange(0, len))
+                connectStatus.postValue(len)
+            }
+
+            override fun onLogInfo(log: String) {
+                logInfo.postValue(log)
+            }
+
+        }
+
+        ThreadUtil.getInstance()?.addThread(uploadThread)
+    }
+
+    fun deviceChange(activity: Activity?) {
+        bluetooth?.destroy(activity)
+        bleOrNormal = !bleOrNormal
+        initManager()
+        scanDevices(true, activity)
+    }
+
+    fun getDeviceType(): String {
+        return when (bluetooth) {
+            is NormalBluetooth -> "普通蓝牙"
+            is BleBluetooth -> "BLE蓝牙"
+            else -> if (bleOrNormal) "BLE蓝牙" else "普通蓝牙"
+        }
+    }
 
     /**
      * 测试时间戳
@@ -99,39 +147,26 @@ class DevicesViewModel(
         liveData
     }
 
-    private var scanCallBack: ScanCallback? = object : ScanCallback() {
-        override fun onScanResult(callbackType: Int, result: ScanResult?) {
-            super.onScanResult(callbackType, result)
-            Log.e(TAG, "onScanResult device = ${result?.device?.address}")
-            val list: ArraySet<BluetoothDevice> = deviceLiveData.value as ArraySet<BluetoothDevice>
-            list.add(result?.device)
-            deviceLiveData.value = list
-        }
-    }
-
     /**
      * 扫描设备
      */
-    fun scanDevices(enable: Boolean) {
-        if(scanning.value == enable){
+    fun scanDevices(enable: Boolean, activity: Activity?) {
+        if (scanning.value == enable) {
             return
         }
-        if (scanner == null) {
+        if (bluetooth == null) {
             initManager()
         }
-        if (adapter?.isEnabled != true) {
+        if (AbstractBluetooth.bluetoothAdapter?.isEnabled != true) {
             noticeMsg.value = "蓝牙已关闭，请打开蓝牙"
             return
         }
         if (enable) {
-            if (scanning.value == true) {
-                return
-            }
             deviceLiveData.value?.clear()
             connectStatus.postValue(BluetoothAdapter.STATE_DISCONNECTED)
-            scanner?.startScan(scanCallBack)
+            bluetooth?.scanDevice(activity)
         } else {
-            scanner?.stopScan(scanCallBack)
+            bluetooth?.stopScanDevice()
         }
         scanning.value = enable
     }
@@ -139,66 +174,33 @@ class DevicesViewModel(
     fun connectService(service: BluetoothGattService) {
         serviceUUID = service.uuid.toString()
         characteristicList.value = service.characteristics
-        connectStatus.postValue(SERVICE_CONNECTED)
-
-        Log.e(TAG, "service connected character = ${service.characteristics.size}")
-        for (character in service.characteristics) {
-            gatt?.setCharacteristicNotification(character, true)
-        }
+        bluetooth?.connectService(service)
     }
 
-    fun connectDevices(device: BluetoothDevice) {
-        scanDevices(false)
-        this.device = device
-        gatt = device.connectGatt(getApplication(), true, object : BluetoothGattCallback() {
+    fun connectDevices(device: BluetoothDevice?) {
+        bluetooth?.stopScanDevice()
+        bluetooth?.connectDevice(null, device)
+    }
 
-            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-                super.onConnectionStateChange(gatt, status, newState)
-                Log.e(TAG, "onConnectionStateChange")
-                if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    Log.e(TAG, "connected")
-                    gatt?.discoverServices()
-                    connectStatus.postValue(newState)
+    private fun receivedData(bytes: ByteArray) {
+        val result = dataAnalyzer.parseData(bytes)
+        if (result != null) {
+            resultValue.postValue(result!!)
+            dataQueue.add(result.clone())
+            when {
+                timeStamps.size < 10 -> {
+                    timeStamps.add(result.timeStamp)
                 }
-
-            }
-
-            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                super.onServicesDiscovered(gatt, status)
-                Log.e(TAG, "onServicesDiscovered status")
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    serviceList.postValue(gatt?.services)
+                timeStamps.size == 10 -> {
+                    timeStamps.removeAt(0)
+                    timeStamps.add(result.timeStamp)
+                    timeStampLive.postValue(timeStamps[9] - timeStamps[0])
                 }
-            }
-
-            override fun onCharacteristicChanged(
-                gatt: BluetoothGatt?,
-                characteristic: BluetoothGattCharacteristic?
-            ) {
-                super.onCharacteristicChanged(gatt, characteristic)
-                Log.e(TAG, "onCharacteristicChanged")
-                if (characteristic?.value != null) {
-                    val result = dataAnalyzer.parseData(characteristic.value)
-                    if (result != null) {
-                        resultValue.postValue(result)
-                        dataQueue.add(result.clone())
-                        when {
-                            timeStamps.size < 10 -> {
-                                timeStamps.add(result.timeStamp)
-                            }
-                            timeStamps.size == 10 -> {
-                                timeStamps.removeAt(0)
-                                timeStamps.add(result.timeStamp)
-                                timeStampLive.postValue(timeStamps[9] - timeStamps[0])
-                            }
-                            else -> {
-                                timeStamps.clear()
-                            }
-                        }
-                    }
+                else -> {
+                    timeStamps.clear()
                 }
             }
-        })
+        }
     }
 
     public fun testUpload(result: BaseData) {
@@ -208,9 +210,8 @@ class DevicesViewModel(
     private val strBuilder = StringBuilder()
 
     private val uploadThread = Runnable {
-
         kotlin.run {
-            while (true) {
+            while (isUploadData) {
                 val data = dataQueue.take();
                 Thread.sleep(10 * 1000)
                 strBuilder.clear()
@@ -225,12 +226,16 @@ class DevicesViewModel(
                 for (d in dates) {
                     strBuilder.append((d as BaseData).getBodyData())
                     count++
-                    if(count >= 200){
+                    if (count >= 200) {
                         strBuilder.append(d.timeStamp).append("\n")
                         count = 0
                     }
                 }
-                strBuilder.append((dates[dates.size-1] as BaseData).timeStamp)
+                if(dates.isEmpty()){
+                    strBuilder.append(data.timeStamp)
+                }else{
+                    strBuilder.append((dates[dates.size - 1] as BaseData).timeStamp)
+                }
                 val result = NetWortUtil.upEcgData(strBuilder.toString())
                 if (result.isSucceed) {
 //                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
@@ -241,14 +246,8 @@ class DevicesViewModel(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private fun onPause() {
-        scanner?.stopScan(scanCallBack)
+        bluetooth?.stopScanDevice()
         deviceLiveData.value?.clear()
-    }
-
-    companion object {
-        private const val TAG = "DevicesViewModel"
-        const val SERVICE_CONNECTED = 3
-
     }
 
 }

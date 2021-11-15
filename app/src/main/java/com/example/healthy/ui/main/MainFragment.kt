@@ -35,7 +35,7 @@ import kotlin.collections.LinkedHashMap
 class MainFragment() : Fragment() {
 
     companion object {
-        private val colors = arrayOf(Color.RED, Color.BLUE, Color.CYAN)
+        private val colors = arrayOf(Color.RED, Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GRAY, Color.GREEN)
         private const val TAG = "MainFragment"
     }
 
@@ -61,7 +61,7 @@ class MainFragment() : Fragment() {
                 while (testThreadRunning) {
                     val heart = HeartThreeData()
                     for (i in heart.bodyData.indices) {
-                        heart.bodyData[i] = (Math.random() * 10).toShort()
+                        heart.bodyData[i] = Math.random().toInt() * 10
 //                heart.bodyData[i] = i.toShort()
                     }
                     viewModel.resultValue.postValue(heart)
@@ -89,14 +89,14 @@ class MainFragment() : Fragment() {
         initLineChart()
 
         binding?.mainSetting?.setOnClickListener {
-            if (!testThreadRunning) {
-                testThreadRunning = true
-                lock.lock()
-                condition.signalAll()
-                lock.unlock()
-            } else {
-                testThreadRunning = false
-            }
+//            if (!testThreadRunning) {
+//                testThreadRunning = true
+//                lock.lock()
+//                condition.signalAll()
+//                lock.unlock()
+//            } else {
+//                testThreadRunning = false
+//            }
 
 
 //            anima()
@@ -164,16 +164,13 @@ class MainFragment() : Fragment() {
 
     }
 
-    private var alphaValue = true
-    private fun anima() {
-//        testFade(binding?.mainBluetooth, alphaValue)
-        testFling(binding?.mainBluetooth)
-    }
-
     private fun initLineChart() {
         binding?.lineChart1?.initDataSet("心电 #1", colors[0])
         binding?.lineChart2?.initDataSet("心电 #2", colors[1])
         binding?.lineChart3?.initDataSet("心电 #3", colors[2])
+        binding?.lineChart4?.initDataSet("心电 #4", colors[3])
+        binding?.lineChart5?.initDataSet("心电 #5", colors[4])
+        binding?.lineChart6?.initDataSet("心电 #6", colors[5])
     }
 
     private fun resetConfig() {
@@ -184,6 +181,9 @@ class MainFragment() : Fragment() {
         binding?.lineChart1?.setDataSetLimit(max, min, type)
         binding?.lineChart2?.setDataSetLimit(max, min, type)
         binding?.lineChart3?.setDataSetLimit(max, min, type)
+        binding?.lineChart4?.setDataSetLimit(max, min, type)
+        binding?.lineChart5?.setDataSetLimit(max, min, type)
+        binding?.lineChart6?.setDataSetLimit(max, min, type)
     }
 
     override fun onResume() {
@@ -266,7 +266,23 @@ class MainFragment() : Fragment() {
                     stringBuilder.append(dataArray[2][i]).append(" ")
                 }
             }
-        } else {
+        } else if(dataArray.size == 6){
+            if (binding?.lineChart2?.visibility == View.GONE) {
+                binding?.lineChart2?.visibility = View.VISIBLE
+                binding?.lineChart3?.visibility = View.VISIBLE
+                binding?.lineChart4?.visibility = View.VISIBLE
+                binding?.lineChart5?.visibility = View.VISIBLE
+                binding?.lineChart6?.visibility = View.VISIBLE
+            }
+            for (i in dataArray[0].indices) {
+                binding?.lineChart1?.addEntry(dataArray[0][i])
+                binding?.lineChart2?.addEntry(dataArray[1][i])
+                binding?.lineChart3?.addEntry(dataArray[2][i])
+                binding?.lineChart4?.addEntry(dataArray[3][i])
+                binding?.lineChart5?.addEntry(dataArray[4][i])
+                binding?.lineChart6?.addEntry(dataArray[5][i])
+            }
+        }else{
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
                 binding?.lineChart2?.visibility = View.GONE
                 binding?.lineChart3?.visibility = View.GONE

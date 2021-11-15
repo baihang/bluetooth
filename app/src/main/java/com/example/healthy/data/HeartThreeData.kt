@@ -27,7 +27,7 @@ open class HeartThreeData : BaseData() {
         return valueArray
     }
 
-    fun byte2Int(b1: Short, b2: Short, b3: Short): Int {
+    fun byte2Int(b1: Int, b2: Int, b3: Int): Int {
         return b1.toInt().shl(16) + b2.toInt().shl(8) + b3
     }
 

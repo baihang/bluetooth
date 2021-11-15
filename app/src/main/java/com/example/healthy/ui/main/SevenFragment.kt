@@ -88,7 +88,7 @@ class SevenFragment() : Fragment() {
         binding?.testButton?.setOnClickListener {
             val heart = HeartThreeData()
             for (i in heart.bodyData.indices) {
-                heart.bodyData[i] = (Math.random() * 10).toShort()
+                heart.bodyData[i] = (Math.random() * 10).toInt()
             }
             viewModel.resultValue.value = heart
         }
