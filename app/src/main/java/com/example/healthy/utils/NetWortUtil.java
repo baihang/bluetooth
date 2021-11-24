@@ -135,6 +135,13 @@ public class NetWortUtil {
         return post(url, body);
     }
 
+    public static NetworkBean<String> uploadHBUData(String param){
+        String url = "https://www.vipmember.com.cn/uploadEcg";
+        JSONObject json = new JSONObject();
+        RequestBody body = RequestBody.create(param, MEDIA_TYPE_MARKDOWN);
+        return postFullUrl(url, body);
+    }
+
     public static NetworkBean<String> login(String phone, String pwd) throws IOException {
         String url = "/user/login";
         Map<String, String> map = new HashMap<>();

@@ -8,9 +8,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.example.healthy.R
+import com.example.healthy.chart.MyLineChart
 import com.example.healthy.utils.SharedPreferenceUtil
 import kotlinx.android.synthetic.main.fragment_setting.*
 
@@ -58,6 +60,10 @@ class SettingFragment : Fragment() {
             limit_min?.setText(it.toString())
         })
 
+        viewModel.xMax.observe(viewLifecycleOwner, Observer {
+            x_max?.setText(it.toString())
+        })
+
         limit_type?.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
             override fun onItemSelected(
                 parent: AdapterView<*>?,
@@ -76,6 +82,13 @@ class SettingFragment : Fragment() {
             override fun onNothingSelected(parent: AdapterView<*>?) {
             }
 
+        }
+
+        x_max?.addTextChangedListener {
+            if(it.toString().isEmpty()){
+                return@addTextChangedListener
+            }
+            viewModel.setxMax(context, it?.toString()?.toInt() ?: MyLineChart.MAX_X_LENGTH)
         }
 
         limit_max?.addTextChangedListener(afterTextChangedListener)

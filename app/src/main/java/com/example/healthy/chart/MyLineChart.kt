@@ -12,8 +12,12 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 
 class MyLineChart : LineChart {
 
+    companion object {
+        const val MAX_X_LENGTH = 40000
+    }
+
     //x轴宽度
-    var maxXAxisLength = 800
+    var maxXAxisLength = MAX_X_LENGTH
 
     constructor(context: Context) : super(context)
 
@@ -39,19 +43,19 @@ class MyLineChart : LineChart {
         keepScreenOn = true
     }
 
-    fun setDataSetLimit(max: Int, min: Int, type: Int){
-        if(data == null){
+    fun setDataSetLimit(max: Int, min: Int, type: Int) {
+        if (data == null) {
             throw NullPointerException("MyLineChart.dataSet == null 图像数据源为空")
         }
         (data as MyChartData).setMaxAndMin(max, min)
         (data as MyChartData).setLimitType(type)
     }
 
-    fun initDataSet(label: String, color: Int) {
+    fun initDataSet(label: String, color: Int, xMax: Int = MAX_X_LENGTH) {
         if (data == null) {
             data = MyChartData()
         }
-
+        maxXAxisLength = xMax
         val value: ArrayList<Entry> = ArrayList(maxXAxisLength)
 
         for (i in 0 until maxXAxisLength) {
@@ -86,7 +90,7 @@ class MyLineChart : LineChart {
         invalidate()
     }
 
-    private fun  dataSetAddEntry(dataSet: ILineDataSet, value: Float) {
+    private fun dataSetAddEntry(dataSet: ILineDataSet, value: Float) {
         if (dataSet.entryCount >= maxXAxisLength) {
             dataSet.removeFirst()
         }

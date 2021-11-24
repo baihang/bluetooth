@@ -147,8 +147,8 @@ class LoginFragment : Fragment() {
 
         visitor.setOnClickListener {
 //            testBinderService(context)
-            testMessenger(context)
-//            loginViewModel.login(loginViewModel.VISITOR, "")
+//            testMessenger(context)
+            loginViewModel.login(loginViewModel.VISITOR, "")
 
             ///////socket 测试
 //            if(socketUtil?.socketStatus == true){
@@ -166,8 +166,8 @@ class LoginFragment : Fragment() {
 //            CustomClassLoader(context?.applicationContext).findClass("")
 
 //            val intent = Intent(activity, TestActivityA::class.java)
-            val intent = Intent(activity, TestImageLoad::class.java)
-            startActivity(intent)
+//            val intent = Intent(activity, TestImageLoad::class.java)
+//            startActivity(intent)
 
 //            val test = TestThread()
 //            test.testThreadMax()

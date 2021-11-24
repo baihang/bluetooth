@@ -23,6 +23,44 @@ object BleBluetooth : AbstractBluetooth() {
         }
     }
 
+    private val gattCallback = object : BluetoothGattCallback() {
+        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
+            super.onConnectionStateChange(gatt, status, newState)
+            Log.e(TAG, "onConnectionStateChange")
+            if (newState == BluetoothGatt.STATE_CONNECTED) {
+                Log.e(TAG, "connected")
+                gatt?.discoverServices()
+                listener?.onDeviceStatusChange(newState)
+            }
+
+        }
+
+        override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
+            super.onServicesDiscovered(gatt, status)
+            Log.e(TAG, "onServicesDiscovered status")
+            if (status == BluetoothGatt.GATT_SUCCESS) {
+                listener?.onServiceFound(gatt?.services)
+                if(gatt?.services.isNullOrEmpty()){
+                    listener?.onLogInfo("扫描服务为空")
+                }
+                for(server in gatt?.services!!){
+                    connectService(server)
+                }
+            }
+        }
+
+        override fun onCharacteristicChanged(
+            gatt: BluetoothGatt?,
+            characteristic: BluetoothGattCharacteristic?
+        ) {
+            super.onCharacteristicChanged(gatt, characteristic)
+            Log.e(TAG, "onCharacteristicChanged")
+            if (characteristic?.value != null) {
+                listener?.onDataReceive(characteristic.value, characteristic.value.size)
+            }
+        }
+    }
+
     override fun deviceInit(application: Application) {
         scanner = bluetoothAdapter?.bluetoothLeScanner
     }
@@ -37,43 +75,7 @@ object BleBluetooth : AbstractBluetooth() {
 
     override fun connectDevice(context: Context?, device: BluetoothDevice?) {
         stopScanDevice()
-        bluetoothGatt = device?.connectGatt(context?.applicationContext, true, object : BluetoothGattCallback() {
-            override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-                super.onConnectionStateChange(gatt, status, newState)
-                Log.e(TAG, "onConnectionStateChange")
-                if (newState == BluetoothGatt.STATE_CONNECTED) {
-                    Log.e(TAG, "connected")
-                    gatt?.discoverServices()
-                    listener?.onDeviceStatusChange(newState)
-                }
-
-            }
-
-            override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
-                super.onServicesDiscovered(gatt, status)
-                Log.e(TAG, "onServicesDiscovered status")
-                if (status == BluetoothGatt.GATT_SUCCESS) {
-                    listener?.onServiceFound(gatt?.services)
-                    if(gatt?.services.isNullOrEmpty()){
-                        listener?.onLogInfo("扫描服务为空")
-                    }
-                    for(server in gatt?.services!!){
-                        connectService(server)
-                    }
-                }
-            }
-
-            override fun onCharacteristicChanged(
-                gatt: BluetoothGatt?,
-                characteristic: BluetoothGattCharacteristic?
-            ) {
-                super.onCharacteristicChanged(gatt, characteristic)
-                Log.e(TAG, "onCharacteristicChanged")
-                if (characteristic?.value != null) {
-                    listener?.onDataReceive(characteristic.value, characteristic.value.size)
-                }
-            }
-        })
+        bluetoothGatt = device?.connectGatt(context?.applicationContext, true, gattCallback)
     }
 
     override fun connectService(service: BluetoothGattService){

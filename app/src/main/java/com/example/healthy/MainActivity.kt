@@ -1,17 +1,13 @@
 package com.example.healthy
 
 import android.Manifest
-import android.animation.ValueAnimator
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager.PERMISSION_GRANTED
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat.requestPermissions
@@ -22,8 +18,6 @@ import com.example.healthy.data.BluetoothBroadCastReceiver
 import com.example.healthy.ui.main.DevicesViewModel
 import com.example.healthy.utils.ActivityHook
 import com.example.healthy.utils.SharedPreferenceUtil
-import java.lang.StringBuilder
-import java.util.*
 
 class MainActivity : AppCompatActivity() {
 

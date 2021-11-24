@@ -219,6 +219,8 @@ class DevicesViewModel(
                 strBuilder.append("\n")
                 strBuilder.append(data.timeStamp)
                 strBuilder.append("\n")
+                val title = strBuilder.toString()
+                strBuilder.clear()
                 strBuilder.append(data.getBodyData())
                 val dates = dataQueue.toArray()
                 dataQueue.clear()
@@ -236,12 +238,16 @@ class DevicesViewModel(
                 }else{
                     strBuilder.append((dates[dates.size - 1] as BaseData).timeStamp)
                 }
-                val result = NetWortUtil.upEcgData(strBuilder.toString())
+                val result = NetWortUtil.upEcgData(title + strBuilder.toString())
                 if (result.isSucceed) {
 //                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
                 }
             }
         }
+    }
+
+    private fun getHbuUpData(){
+
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)

@@ -1,41 +1,38 @@
 package com.example.healthy.ui.main
 
-import android.content.*
+import android.content.ClipData
+import android.content.ClipDescription
+import android.content.ClipboardManager
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import androidx.dynamicanimation.animation.FlingAnimation
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ReportFragment
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
-import com.example.healthy.bean.AbstractLoadBean
+import com.example.healthy.chart.MyLineChart
 import com.example.healthy.data.BaseData
-import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
-import com.example.healthy.utils.*
+import com.example.healthy.utils.LocalFileUtil
+import com.example.healthy.utils.SharedPreferenceUtil
+import com.example.healthy.utils.ThreadUtil
 import com.google.android.material.snackbar.Snackbar
-import com.tencent.bugly.crashreport.CrashReport
-import okhttp3.internal.wait
 import java.io.FileOutputStream
-import java.lang.StringBuilder
-import java.util.*
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.collections.LinkedHashMap
 
 class MainFragment() : Fragment() {
 
     companion object {
-        private val colors = arrayOf(Color.RED, Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GRAY, Color.GREEN)
+        private val colors =
+            arrayOf(Color.RED, Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GRAY, Color.GREEN)
         private const val TAG = "MainFragment"
     }
 
@@ -51,54 +48,11 @@ class MainFragment() : Fragment() {
         return binding!!.root
     }
 
-    private val lock = ReentrantLock()
-    private val condition = lock.newCondition()
-
-    private var testThread = Thread() {
-        kotlin.run {
-            lock.lock()
-            while (true) {
-                while (testThreadRunning) {
-                    val heart = HeartThreeData()
-                    for (i in heart.bodyData.indices) {
-                        heart.bodyData[i] = Math.random().toInt() * 10
-//                heart.bodyData[i] = i.toShort()
-                    }
-                    viewModel.resultValue.postValue(heart)
-                    viewModel.testTime(heart)
-
-                    viewModel.testUpload(heart)
-                    Thread.sleep(5)
-                }
-                condition.await()
-            }
-            lock.unlock()
-        }
-    }
-
-    @Volatile
-    private var testThreadRunning = false
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        testThread.start()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initLineChart()
 
         binding?.mainSetting?.setOnClickListener {
-//            if (!testThreadRunning) {
-//                testThreadRunning = true
-//                lock.lock()
-//                condition.signalAll()
-//                lock.unlock()
-//            } else {
-//                testThreadRunning = false
-//            }
-
-
 //            anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
@@ -108,6 +62,13 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
+            val heart = HeartSixData()
+            val k = (Math.random() * 10).toInt()
+            for (i in heart.bodyData.indices) {
+//                heart.bodyData[i] = (Math.random() * 10).toInt()
+                heart.bodyData[i] = i
+            }
+            viewModel.resultValue.postValue(heart)
         }
 
         binding?.mainSetting?.setOnLongClickListener {
@@ -164,13 +125,17 @@ class MainFragment() : Fragment() {
 
     }
 
+
     private fun initLineChart() {
-        binding?.lineChart1?.initDataSet("心电 #1", colors[0])
-        binding?.lineChart2?.initDataSet("心电 #2", colors[1])
-        binding?.lineChart3?.initDataSet("心电 #3", colors[2])
-        binding?.lineChart4?.initDataSet("心电 #4", colors[3])
-        binding?.lineChart5?.initDataSet("心电 #5", colors[4])
-        binding?.lineChart6?.initDataSet("心电 #6", colors[5])
+        val sp = SharedPreferenceUtil.getSharedPreference(context)
+        val xMax =
+            sp?.getInt(SettingViewModel.X_MAX, MyLineChart.MAX_X_LENGTH) ?: MyLineChart.MAX_X_LENGTH
+        binding?.lineChart1?.initDataSet("心电 #1", colors[0], xMax)
+        binding?.lineChart2?.initDataSet("心电 #2", colors[1], xMax)
+        binding?.lineChart3?.initDataSet("心电 #3", colors[2], xMax)
+        binding?.lineChart4?.initDataSet("心电 #4", colors[3], xMax)
+        binding?.lineChart5?.initDataSet("心电 #5", colors[4], xMax)
+        binding?.lineChart6?.initDataSet("心电 #6", colors[5], xMax)
     }
 
     private fun resetConfig() {
@@ -255,7 +220,7 @@ class MainFragment() : Fragment() {
                 binding?.lineChart2?.visibility = View.VISIBLE
                 binding?.lineChart3?.visibility = View.VISIBLE
             }
-            for (i in dataArray[0].indices step 3) {
+            for (i in dataArray[0].indices) {
                 binding?.lineChart1?.addEntry(dataArray[0][i])
                 binding?.lineChart2?.addEntry(dataArray[1][i])
                 binding?.lineChart3?.addEntry(dataArray[2][i])
@@ -266,7 +231,7 @@ class MainFragment() : Fragment() {
                     stringBuilder.append(dataArray[2][i]).append(" ")
                 }
             }
-        } else if(dataArray.size == 6){
+        } else if (dataArray.size == 6) {
             if (binding?.lineChart2?.visibility == View.GONE) {
                 binding?.lineChart2?.visibility = View.VISIBLE
                 binding?.lineChart3?.visibility = View.VISIBLE
@@ -275,6 +240,9 @@ class MainFragment() : Fragment() {
                 binding?.lineChart6?.visibility = View.VISIBLE
             }
             for (i in dataArray[0].indices) {
+                if (i != 0 && dataArray[0][i] == dataArray[0][i - 1]) {
+                    continue
+                }
                 binding?.lineChart1?.addEntry(dataArray[0][i])
                 binding?.lineChart2?.addEntry(dataArray[1][i])
                 binding?.lineChart3?.addEntry(dataArray[2][i])
@@ -282,7 +250,7 @@ class MainFragment() : Fragment() {
                 binding?.lineChart5?.addEntry(dataArray[4][i])
                 binding?.lineChart6?.addEntry(dataArray[5][i])
             }
-        }else{
+        } else {
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
                 binding?.lineChart2?.visibility = View.GONE
                 binding?.lineChart3?.visibility = View.GONE
