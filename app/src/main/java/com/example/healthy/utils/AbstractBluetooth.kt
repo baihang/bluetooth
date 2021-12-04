@@ -8,10 +8,13 @@ import android.content.Context
 abstract class AbstractBluetooth {
 
     companion object {
-        const val STATUS_CONNECTED_DEVICE = BluetoothGatt.STATE_CONNECTED
-        const val STATUS_CONNECTED_SUCCESS = 3
-        const val STATUS_DESTROY = 4
+        const val STATUS_BLUETOOTH_CLOSE = -3
+        const val STATUS_DESTROY = -2
         const val STATUS_ERROR = -1
+        const val STATUS_NONE = 0
+        const val STATUS_CONNECTED_DEVICE = 2
+        const val STATUS_CONNECTED_SUCCESS = 3
+        const val STATUS_CONNECT_SERVICE = 5
 
         var bluetoothAdapter: BluetoothAdapter? = null
         var manager: BluetoothManager? = null

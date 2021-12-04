@@ -23,6 +23,7 @@ import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.example.healthy.utils.LocalFileUtil
+import com.example.healthy.utils.NoticePopWindow
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.example.healthy.utils.ThreadUtil
 import com.google.android.material.snackbar.Snackbar
@@ -62,13 +63,13 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
-            val heart = HeartSixData()
-            val k = (Math.random() * 10).toInt()
-            for (i in heart.bodyData.indices) {
-//                heart.bodyData[i] = (Math.random() * 10).toInt()
-                heart.bodyData[i] = i
-            }
-            viewModel.resultValue.postValue(heart)
+//            val heart = HeartSixData()
+//            val k = (Math.random() * 10).toInt()
+//            for (i in heart.bodyData.indices) {
+////                heart.bodyData[i] = (Math.random() * 10).toInt()
+//                heart.bodyData[i] = i
+//            }
+//            viewModel.resultValue.postValue(heart)
         }
 
         binding?.mainSetting?.setOnLongClickListener {

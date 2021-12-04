@@ -38,7 +38,9 @@ class DevicesViewModel(
      * true ble
      * false normal
      */
-    private var bleOrNormal = false
+    private var bleOrNormal = true
+    private val DEBUG = false
+    private val isUploadData = true
     private var bluetooth: AbstractBluetooth? = null
 
     private var value: Int = 0
@@ -48,8 +50,6 @@ class DevicesViewModel(
     private val dataAnalyzer: DataAnalyze by lazy { DataAnalyze() }
 
     var scanning: MutableLiveData<Boolean> = MutableLiveData(false)
-    var noticeMsg: MutableLiveData<String> = MutableLiveData()
-    var serviceList: MutableLiveData<List<BluetoothGattService>> = MutableLiveData(ArrayList())
 
     private var characteristicList: MutableLiveData<List<BluetoothGattCharacteristic>> =
         MutableLiveData(ArrayList())
@@ -65,16 +65,13 @@ class DevicesViewModel(
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
 
-    private val DEBUG = false
-    private val isUploadData = false
-
     private fun initManager() {
         bluetooth = if (bleOrNormal) {
             BleBluetooth
         } else {
             NormalBluetooth
         }
-        if(DEBUG){
+        if (DEBUG) {
             bluetooth = VirtualBluetooth
         }
         bluetooth?.baseInit(getApplication())
@@ -95,6 +92,16 @@ class DevicesViewModel(
                 connectStatus.postValue(len)
             }
 
+            override fun onServiceFound(services: List<BluetoothGattService>?) {
+                if (services.isNullOrEmpty()) {
+                    logInfo.postValue("onServiceFound null or empty")
+                    return
+                }
+                for(s in services){
+                    bluetooth?.connectService(s)
+                }
+            }
+
             override fun onLogInfo(log: String) {
                 logInfo.postValue(log)
             }
@@ -104,6 +111,8 @@ class DevicesViewModel(
         ThreadUtil.getInstance()?.addThread(uploadThread)
     }
 
+    private var i = 1
+    private val stringBuilder = StringBuilder()
     fun deviceChange(activity: Activity?) {
         bluetooth?.destroy(activity)
         bleOrNormal = !bleOrNormal
@@ -158,7 +167,8 @@ class DevicesViewModel(
             initManager()
         }
         if (AbstractBluetooth.bluetoothAdapter?.isEnabled != true) {
-            noticeMsg.value = "蓝牙已关闭，请打开蓝牙"
+            logInfo.postValue("蓝牙已关闭，请打开蓝牙")
+            connectStatus.postValue(AbstractBluetooth.STATUS_BLUETOOTH_CLOSE)
             return
         }
         if (enable) {
@@ -171,15 +181,9 @@ class DevicesViewModel(
         scanning.value = enable
     }
 
-    fun connectService(service: BluetoothGattService) {
-        serviceUUID = service.uuid.toString()
-        characteristicList.value = service.characteristics
-        bluetooth?.connectService(service)
-    }
-
-    fun connectDevices(device: BluetoothDevice?) {
+    fun connectDevices(context: Context, device: BluetoothDevice?) {
         bluetooth?.stopScanDevice()
-        bluetooth?.connectDevice(null, device)
+        bluetooth?.connectDevice(context, device)
     }
 
     private fun receivedData(bytes: ByteArray) {
@@ -203,10 +207,6 @@ class DevicesViewModel(
         }
     }
 
-    public fun testUpload(result: BaseData) {
-        dataQueue.add(result)
-    }
-
     private val strBuilder = StringBuilder()
 
     private val uploadThread = Runnable {
@@ -228,32 +228,31 @@ class DevicesViewModel(
                 for (d in dates) {
                     strBuilder.append((d as BaseData).getBodyData())
                     count++
-                    if (count >= 200) {
+                    if (count >= 200 && dates.size > 200) {
                         strBuilder.append(d.timeStamp).append("\n")
                         count = 0
                     }
                 }
-                if(dates.isEmpty()){
+                if (dates.isEmpty()) {
                     strBuilder.append(data.timeStamp)
-                }else{
+                } else {
                     strBuilder.append((dates[dates.size - 1] as BaseData).timeStamp)
                 }
-                val result = NetWortUtil.upEcgData(title + strBuilder.toString())
-                if (result.isSucceed) {
-//                    Log.e(TAG, "upload result = $result param = ${strBuilder.toString()}")
-                }
+                NetWortUtil.upEcgData(title + strBuilder.toString())
             }
         }
-    }
-
-    private fun getHbuUpData(){
-
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private fun onPause() {
         bluetooth?.stopScanDevice()
         deviceLiveData.value?.clear()
+    }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    fun onDestroy(activity: Activity?) {
+        Log.e(TAG, "on destroy")
+        bluetooth?.destroy(activity)
     }
 
 }

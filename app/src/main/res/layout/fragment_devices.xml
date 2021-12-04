@@ -58,6 +58,11 @@
                 android:text="去看图像"
                 android:textColor="#DEBC8B" />
 
+            <ProgressBar
+                android:id="@+id/progress"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"/>
 
         </RelativeLayout>
 

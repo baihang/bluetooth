@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.util.Log
+import java.util.ArrayList
 
 object BleBluetooth : AbstractBluetooth() {
     private val TAG = BleBluetooth.javaClass.simpleName
@@ -23,29 +24,26 @@ object BleBluetooth : AbstractBluetooth() {
         }
     }
 
-    private val gattCallback = object : BluetoothGattCallback() {
+    private val servicesList = ArrayList<BluetoothGattService>()
+
+    private val myCallback = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
             super.onConnectionStateChange(gatt, status, newState)
-            Log.e(TAG, "onConnectionStateChange")
             if (newState == BluetoothGatt.STATE_CONNECTED) {
-                Log.e(TAG, "connected")
+                servicesList.clear()
                 gatt?.discoverServices()
                 listener?.onDeviceStatusChange(newState)
+            } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
+                listener?.onDeviceStatusChange(STATUS_DESTROY)
             }
 
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
             super.onServicesDiscovered(gatt, status)
-            Log.e(TAG, "onServicesDiscovered status")
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 listener?.onServiceFound(gatt?.services)
-                if(gatt?.services.isNullOrEmpty()){
-                    listener?.onLogInfo("扫描服务为空")
-                }
-                for(server in gatt?.services!!){
-                    connectService(server)
-                }
+                listener?.onDeviceStatusChange(STATUS_CONNECT_SERVICE)
             }
         }
 
@@ -54,11 +52,16 @@ object BleBluetooth : AbstractBluetooth() {
             characteristic: BluetoothGattCharacteristic?
         ) {
             super.onCharacteristicChanged(gatt, characteristic)
-            Log.e(TAG, "onCharacteristicChanged")
+            listener?.onLogInfo("receive data size = ${characteristic?.value?.size}")
+            if (status != STATUS_CONNECTED_SUCCESS) {
+                listener?.onDeviceStatusChange(STATUS_CONNECTED_SUCCESS)
+                status = STATUS_CONNECTED_SUCCESS
+            }
             if (characteristic?.value != null) {
                 listener?.onDataReceive(characteristic.value, characteristic.value.size)
             }
         }
+
     }
 
     override fun deviceInit(application: Application) {
@@ -73,19 +76,36 @@ object BleBluetooth : AbstractBluetooth() {
         scanner?.stopScan(scanCallBack)
     }
 
+    private var status = STATUS_NONE
     override fun connectDevice(context: Context?, device: BluetoothDevice?) {
+        if (bluetoothGatt != null) {
+            bluetoothGatt?.close()
+            bluetoothGatt = null
+        }
         stopScanDevice()
-        bluetoothGatt = device?.connectGatt(context?.applicationContext, true, gattCallback)
+        status = STATUS_NONE
+        bluetoothGatt = device?.connectGatt(context?.applicationContext, false, myCallback)
     }
 
-    override fun connectService(service: BluetoothGattService){
+    override fun connectService(service: BluetoothGattService) {
         for (character in service.characteristics) {
-            bluetoothGatt?.setCharacteristicNotification(character, true)
+            if (character.properties.and(BluetoothGattCharacteristic.PROPERTY_NOTIFY) == 0) {
+                continue
+            }
+            val result = bluetoothGatt?.setCharacteristicNotification(character, true) ?: false
+            if (result) {
+                for (des in character.descriptors) {
+                    des.value = BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE
+                    bluetoothGatt?.writeDescriptor(des)
+                }
+            }
         }
     }
 
     override fun destroy(activity: Activity?) {
         stopScanDevice()
+        bluetoothGatt?.close()
+        bluetoothGatt = null
     }
 
 }

@@ -56,6 +56,8 @@ public class TokenRefreshUtil {
         return "";
     }
 
+    private static volatile int retry = 0;
+
     public String getToken(){
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, "");
         if(userSetting.token == null || userSetting.tokenTime < (System.currentTimeMillis() / 1000)){
@@ -63,8 +65,13 @@ public class TokenRefreshUtil {
             userSetting = refreshToken();
         }
         if(userSetting == null || userSetting.token == null){
+            retry++;
+            if(retry >= 3){
+
+            }
             return "";
         }
+        retry = 0;
         return userSetting.token;
     }
 

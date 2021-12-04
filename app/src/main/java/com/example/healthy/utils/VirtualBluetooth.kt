@@ -15,6 +15,7 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import com.example.healthy.data.BaseData
+import com.example.healthy.data.HeartOneData
 import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import okhttp3.internal.wait
@@ -57,15 +58,16 @@ object VirtualBluetooth : AbstractBluetooth() {
 
                             listener?.onDeviceStatusChange(STATUS_CONNECTED_DEVICE)
                             receiveData()
+                            listener?.onDeviceStatusChange(STATUS_CONNECTED_SUCCESS)
                         }
                         MSG_RECEIVE_DATA -> {
-                            val data = getVirtualData(HeartSixData())
+                            val data = getVirtualData(HeartOneData())
                             listener?.onDataReceive(data, data.size)
                             receiveData()
                         }
 
                     }
-                    Log.e(TAG, "handle message ${msg.what}")
+//                    Log.e(TAG, "handle message ${msg.what}")
                 }
             }
             Looper.loop()
