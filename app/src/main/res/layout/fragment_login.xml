@@ -11,37 +11,69 @@
     android:paddingBottom="@dimen/fragment_vertical_margin"
     tools:context=".ui.main.ui.login.LoginFragment">
 
-    <EditText
-        android:id="@+id/username"
-        android:layout_width="0dp"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/username_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
         android:layout_marginTop="96dp"
-        android:layout_marginEnd="24dp"
         android:hint="@string/prompt_mobile"
-        android:inputType="textEmailAddress"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:background="@color/colorAccent"
+        app:layout_constraintTop_toTopOf="parent">
 
-    <EditText
-        android:id="@+id/password"
-        android:layout_width="0dp"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textEmailAddress" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!--    <EditText-->
+    <!--        android:id="@+id/username"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="24dp"-->
+    <!--        android:layout_marginTop="96dp"-->
+    <!--        android:layout_marginEnd="24dp"-->
+    <!--        android:hint="@string/prompt_mobile"-->
+    <!--        android:inputType="textEmailAddress"-->
+    <!--        android:selectAllOnFocus="true"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/pwd_layout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginTop="96dp"
         android:hint="@string/prompt_password"
-        android:imeActionLabel="@string/action_sign_in_short"
-        android:imeOptions="actionDone"
-        android:inputType="textPassword"
-        android:selectAllOnFocus="true"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/username" />
+        app:layout_constraintTop_toTopOf="@id/username_layout">
 
-    <Button
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+    <!--    <EditText-->
+    <!--        android:id="@+id/password"-->
+    <!--        android:layout_width="0dp"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:layout_marginStart="24dp"-->
+    <!--        android:layout_marginTop="8dp"-->
+    <!--        android:layout_marginEnd="24dp"-->
+    <!--        android:hint="@string/prompt_password"-->
+    <!--        android:imeActionLabel="@string/action_sign_in_short"-->
+    <!--        android:imeOptions="actionDone"-->
+    <!--        android:inputType="textPassword"-->
+    <!--        android:selectAllOnFocus="true"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@+id/username" />-->
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -57,7 +89,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/password"
+        app:layout_constraintTop_toBottomOf="@+id/pwd_layout"
         app:layout_constraintVertical_bias="0.2" />
 
     <Button
@@ -70,18 +102,19 @@
         app:layout_constraintEnd_toEndOf="@+id/to_sms"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/to_sms"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+        app:layout_constraintTop_toBottomOf="@+id/pwd_layout" />
 
     <Button
         android:id="@+id/to_sms"
         android:layout_width="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/sign_up"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
+        android:background="@color/colorAccent"
+        style="@style/Widget.MaterialComponents.Button.TextButton"
         android:text="@string/sms_login"
         android:textColor="@color/black"
-        android:background="@color/colorAccent"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/sign_up" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/visitor"
@@ -104,8 +137,7 @@
         android:layout_marginBottom="64dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/password"
-        app:layout_constraintStart_toStartOf="@+id/password"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.3" />
 </androidx.constraintlayout.widget.ConstraintLayout>

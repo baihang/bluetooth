@@ -13,7 +13,7 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 class MyLineChart : LineChart {
 
     companion object {
-        const val MAX_X_LENGTH = 40000
+        const val MAX_X_LENGTH = 800
     }
 
     //x轴宽度
@@ -37,7 +37,8 @@ class MyLineChart : LineChart {
 //        xAxis.isEnabled = false
         description.isEnabled = false
         mClipValuesToContent = false
-        setDrawGridBackground(true)
+        mDrawBorders = true
+        setDrawGridBackground(false)
         setGridBackgroundColor(Color.RED)
 
         keepScreenOn = true
@@ -68,7 +69,7 @@ class MyLineChart : LineChart {
         dataSet.color = color
         dataSet.setDrawCircles(false)
         dataSet.fillColor = Color.GRAY
-        dataSet.setDrawFilled(true)
+        dataSet.setDrawFilled(false)
         dataSet.setDrawValues(false)
 
         data.dataSets.add(dataSet)

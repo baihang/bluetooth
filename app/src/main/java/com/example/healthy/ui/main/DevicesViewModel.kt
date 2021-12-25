@@ -7,7 +7,11 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.wifi.aware.Characteristics
+import android.os.Bundle
 import android.os.Handler
 import android.util.Log
 import android.widget.Toast
@@ -16,6 +20,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import com.example.healthy.MainActivity
+import com.example.healthy.MyApplication
 import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
@@ -97,7 +103,7 @@ class DevicesViewModel(
                     logInfo.postValue("onServiceFound null or empty")
                     return
                 }
-                for(s in services){
+                for (s in services) {
                     bluetooth?.connectService(s)
                 }
             }
@@ -243,10 +249,54 @@ class DevicesViewModel(
         }
     }
 
+    private fun uploadLocation(){
+        if(location != null){
+
+        }
+    }
+
+    private var location: Location? = null
+    private val locationListener by lazy {
+        object :
+            LocationListener {
+            override fun onLocationChanged(l: Location?) {
+                Log.e(TAG, "onLocationChanged :${l?.toString()}")
+                location = l
+            }
+
+            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
+
+            }
+
+            override fun onProviderEnabled(provider: String?) {
+
+            }
+
+            override fun onProviderDisabled(provider: String?) {
+            }
+
+        }
+    }
+
+    private val locationManager by lazy { getApplication<MyApplication>().getSystemService(Context.LOCATION_SERVICE) as LocationManager }
+
+    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    private fun onResume() {
+        Log.e(TAG, "on resume ")
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            10000,
+            100F,
+            locationListener
+        )
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     private fun onPause() {
+        Log.e(TAG, "on pause ")
         bluetooth?.stopScanDevice()
         deviceLiveData.value?.clear()
+        locationManager.removeUpdates(locationListener)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)

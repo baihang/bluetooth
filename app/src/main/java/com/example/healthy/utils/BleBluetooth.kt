@@ -7,19 +7,17 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
-import android.util.Log
 import java.util.ArrayList
 
 object BleBluetooth : AbstractBluetooth() {
     private val TAG = BleBluetooth.javaClass.simpleName
     private var scanner: BluetoothLeScanner? = null
     private var bluetoothGatt: BluetoothGatt? = null
-
+    private var status = STATUS_NONE
 
     private var scanCallBack: ScanCallback? = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult?) {
             super.onScanResult(callbackType, result)
-            Log.e(TAG, "onScanResult device = ${result?.device?.address}")
             listener?.onDeviceFound(result?.device)
         }
     }
@@ -43,7 +41,6 @@ object BleBluetooth : AbstractBluetooth() {
             super.onServicesDiscovered(gatt, status)
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 listener?.onServiceFound(gatt?.services)
-                listener?.onDeviceStatusChange(STATUS_CONNECT_SERVICE)
             }
         }
 
@@ -76,7 +73,6 @@ object BleBluetooth : AbstractBluetooth() {
         scanner?.stopScan(scanCallBack)
     }
 
-    private var status = STATUS_NONE
     override fun connectDevice(context: Context?, device: BluetoothDevice?) {
         if (bluetoothGatt != null) {
             bluetoothGatt?.close()
@@ -104,6 +100,7 @@ object BleBluetooth : AbstractBluetooth() {
 
     override fun destroy(activity: Activity?) {
         stopScanDevice()
+        listener?.onDeviceStatusChange(STATUS_DESTROY)
         bluetoothGatt?.close()
         bluetoothGatt = null
     }

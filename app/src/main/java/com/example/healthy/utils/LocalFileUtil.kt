@@ -16,10 +16,6 @@ class LocalFileUtil {
             return context.getExternalFilesDir(null)?.absolutePath
         }
 
-        private fun getRootName(): String {
-            return "Healthy"
-        }
-
         fun getDateStr(): String {
             val date = Date(System.currentTimeMillis())
             val dateFormat = SimpleDateFormat("yyyy年MM月dd日 HH:mm:ss")
@@ -34,7 +30,7 @@ class LocalFileUtil {
             if (root.isNullOrEmpty()) {
                 return null
             }
-            val path = "$root/${getRootName()}/$name"
+            val path = "$root/$name"
             return if (createFileDirector(path)) {
                 path
             } else {

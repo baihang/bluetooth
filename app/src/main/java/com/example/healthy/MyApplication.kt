@@ -1,6 +1,8 @@
 package com.example.healthy
 
 import android.app.Application
+import android.location.LocationManager
+import android.location.LocationProvider
 import android.os.Build
 import android.os.StrictMode
 import android.util.Log

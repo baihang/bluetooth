@@ -35,9 +35,6 @@ class DevicesFragment : Fragment() {
 
     companion object {
         private const val TAG = "DevicesFragment"
-
-        private const val LIST_MODEL_DEVICES = 0
-        private const val LIST_MODEL_SERVICE = 1
     }
 
     private lateinit var binding: FragmentDevicesBinding
@@ -126,16 +123,10 @@ class DevicesFragment : Fragment() {
         }
 
         model.resultValue.observe(viewLifecycleOwner, Observer { baseData ->
-//            strBuilder.append(binding.deviceDataEt.text)
-//            strBuilder.append(baseData.label).append(" : ")
-//            for (value in baseData.bodyData) {
-//                val hex = java.lang.Integer.toHexString(value.toInt())
-//                strBuilder.append("$hex ")
-//            }
-//            strBuilder.append("\n")
-//            binding.deviceDataEt.setText(strBuilder.toString())
-//            strBuilder.clear()
             debugInfo("收到数据：${baseData.label}")
+            if(NoticePopWindow.isShow()){
+                NoticePopWindow.dismiss()
+            }
         })
 
         model.deviceLiveData.observe(viewLifecycleOwner, Observer { set ->
@@ -168,14 +159,10 @@ class DevicesFragment : Fragment() {
 
         model.connectStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
-                BluetoothAdapter.STATE_DISCONNECTED -> {
+                AbstractBluetooth.STATUS_SCANNING -> {
                     debugInfo("正在扫描设备")
                     adapter.notifyDataSetChanged()
                     binding.deviceDataButton.visibility = View.GONE
-                }
-
-                BluetoothAdapter.STATE_CONNECTED -> {
-                    debugInfo("正在扫描服务")
                 }
 
                 AbstractBluetooth.STATUS_CONNECTED_SUCCESS -> {

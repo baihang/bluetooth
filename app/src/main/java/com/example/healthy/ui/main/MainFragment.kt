@@ -1,16 +1,16 @@
 package com.example.healthy.ui.main
 
-import android.content.ClipData
-import android.content.ClipDescription
-import android.content.ClipboardManager
-import android.content.Context
+import android.content.*
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -27,13 +27,14 @@ import com.example.healthy.utils.NoticePopWindow
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.example.healthy.utils.ThreadUtil
 import com.google.android.material.snackbar.Snackbar
+import java.io.File
 import java.io.FileOutputStream
 
 class MainFragment() : Fragment() {
 
     companion object {
         private val colors =
-            arrayOf(Color.RED, Color.BLUE, Color.CYAN, Color.DKGRAY, Color.GRAY, Color.GREEN)
+            arrayOf(Color.RED, Color.BLUE, Color.RED, Color.BLUE, Color.RED, Color.BLUE)
         private const val TAG = "MainFragment"
     }
 
@@ -63,13 +64,13 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
-//            val heart = HeartSixData()
-//            val k = (Math.random() * 10).toInt()
-//            for (i in heart.bodyData.indices) {
-////                heart.bodyData[i] = (Math.random() * 10).toInt()
-//                heart.bodyData[i] = i
-//            }
-//            viewModel.resultValue.postValue(heart)
+            val heart = HeartSixData()
+            val k = (Math.random() * 10).toInt()
+            for (i in heart.bodyData.indices) {
+//                heart.bodyData[i] = (Math.random() * 10).toInt()
+                heart.bodyData[i] = i
+            }
+            viewModel.resultValue.postValue(heart)
         }
 
         binding?.mainSetting?.setOnLongClickListener {
@@ -84,6 +85,24 @@ class MainFragment() : Fragment() {
         binding?.mainBluetooth?.setOnLongClickListener {
             findNavController().navigate(R.id.SevenFragment)
             true
+        }
+
+        binding?.mainSaveTimeTv?.setOnClickListener {
+            val patch = filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
+            val file = File(patch)
+            if(!file.exists()){
+                return@setOnClickListener
+            }
+            val uri = FileProvider.getUriForFile(requireContext(), requireContext().applicationContext.packageName + ".provider", file)
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            intent.setDataAndType(uri, "*/*")
+            Log.e(TAG, "to file patch $patch")
+            try {
+                startActivity(intent)
+            }catch (e : ActivityNotFoundException){
+                Snackbar.make(binding!!.mainSaveBt, "打开文件夹失败", Snackbar.LENGTH_LONG).show()
+            }
         }
 
         binding?.mainSaveBt?.setOnClickListener {
@@ -110,7 +129,8 @@ class MainFragment() : Fragment() {
                         val data =
                             ClipData.newPlainText(ClipDescription.MIMETYPE_TEXT_PLAIN, filePath)
                         clipboard.setPrimaryClip(data)
-                    }).show()
+                    })
+                    .show()
             }
 //            binding.mainSaveTimeTv.text = LocalFileUtil.getDateStr()
         }
@@ -121,7 +141,7 @@ class MainFragment() : Fragment() {
 
         viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
             val data = 10000 / it
-            binding?.mainFlow?.text = "流量： $data p/s"
+            binding?.mainFlow?.setText("流量： $data p/s")
         })
 
     }
@@ -250,6 +270,14 @@ class MainFragment() : Fragment() {
                 binding?.lineChart4?.addEntry(dataArray[3][i])
                 binding?.lineChart5?.addEntry(dataArray[4][i])
                 binding?.lineChart6?.addEntry(dataArray[5][i])
+                if (timeInterval != -1) {
+                    stringBuilder.append(dataArray[0][i]).append(" ")
+                    stringBuilder.append(dataArray[1][i]).append(" ")
+                    stringBuilder.append(dataArray[2][i]).append(" ")
+                    stringBuilder.append(dataArray[3][i]).append(" ")
+                    stringBuilder.append(dataArray[4][i]).append(" ")
+                    stringBuilder.append(dataArray[5][i]).append(" ")
+                }
             }
         } else {
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
