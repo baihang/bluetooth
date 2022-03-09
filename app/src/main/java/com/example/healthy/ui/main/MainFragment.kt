@@ -22,13 +22,11 @@ import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.databinding.MainFragmentBinding
-import com.example.healthy.utils.LocalFileUtil
-import com.example.healthy.utils.NoticePopWindow
-import com.example.healthy.utils.SharedPreferenceUtil
-import com.example.healthy.utils.ThreadUtil
+import com.example.healthy.utils.*
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
+import java.lang.ref.PhantomReference
 
 class MainFragment() : Fragment() {
 
@@ -62,6 +60,10 @@ class MainFragment() : Fragment() {
 //            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 //            context?.applicationContext?.startActivity(intent)
 
+            val intent = Intent(activity, TestActivityA::class.java)
+            startActivity(intent)
+            return@setOnClickListener
+
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
             val heart = HeartSixData()
@@ -88,7 +90,7 @@ class MainFragment() : Fragment() {
         }
 
         binding?.mainSaveTimeTv?.setOnClickListener {
-            val patch = filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
+            val patch = viewModel.filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
             val file = File(patch)
             if(!file.exists()){
                 return@setOnClickListener
@@ -101,38 +103,22 @@ class MainFragment() : Fragment() {
             try {
                 startActivity(intent)
             }catch (e : ActivityNotFoundException){
-                Snackbar.make(binding!!.mainSaveBt, "打开文件夹失败", Snackbar.LENGTH_LONG).show()
+                Snackbar.make(binding!!.mainSaveTimeTv, "打开文件夹失败", Snackbar.LENGTH_LONG).show()
             }
         }
 
-        binding?.mainSaveBt?.setOnClickListener {
-            if (timeInterval == -1) {
-//                开始保存
-                timeInterval = 0
-                binding?.mainSaveBt?.setText("结束保存")
-                ThreadUtil.getInstance()?.addTimeListener(timeListener)
-            } else {
-//                保存结束
-                binding?.mainSaveBt?.setText("开始保存")
-                timeInterval = -1
-                ThreadUtil.getInstance()?.removeTimeListener(timeListener)
-                saveToFile()
-                outPutStream?.close()
-                outPutStream = null
-                stringBuilder.clear()
-
-                Snackbar.make(binding!!.mainSaveBt, filePath ?: "", Snackbar.LENGTH_LONG)
-                    .setAction("复制", View.OnClickListener {
-                        //复制到剪切板
-                        val clipboard =
-                            context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val data =
-                            ClipData.newPlainText(ClipDescription.MIMETYPE_TEXT_PLAIN, filePath)
-                        clipboard.setPrimaryClip(data)
-                    })
-                    .show()
-            }
-//            binding.mainSaveTimeTv.text = LocalFileUtil.getDateStr()
+        binding?.mainSaveTimeTv?.setOnLongClickListener {
+            Snackbar.make(binding!!.mainSaveTimeTv, viewModel.filePath ?: "", Snackbar.LENGTH_LONG)
+                .setAction("复制", View.OnClickListener {
+                    //复制到剪切板
+                    val clipboard =
+                        context?.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                    val data =
+                        ClipData.newPlainText(ClipDescription.MIMETYPE_TEXT_PLAIN, viewModel.filePath)
+                    clipboard.setPrimaryClip(data)
+                })
+                .show()
+            return@setOnLongClickListener true
         }
 
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
@@ -177,43 +163,6 @@ class MainFragment() : Fragment() {
         resetConfig()
     }
 
-    /**
-     * 10s保存一次
-     */
-    private var timeInterval = -1
-
-    private val timeListener = object : ThreadUtil.TimeListener {
-        override fun onClock() {
-            timeInterval++
-            if (timeInterval >= 10) {
-                timeInterval = 0
-                saveToFile()
-            }
-        }
-    }
-
-    private val stringBuilder = StringBuilder()
-    private var filePath: String? = null
-    private var outPutStream: FileOutputStream? = null
-    private fun saveToFile() {
-        Log.e(TAG, "save to file")
-        var value = ""
-        synchronized(stringBuilder) {
-            value = stringBuilder.toString()
-            stringBuilder.clear()
-        }
-        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
-        if (outPutStream == null) {
-            val file =
-                LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
-            filePath = file?.absolutePath
-            Log.e(TAG, "open file = ${file?.absolutePath}")
-            outPutStream = FileOutputStream(file)
-        }
-        outPutStream?.write(result.toByteArray())
-//        outPutStream?.flush()
-    }
-
     override fun onDetach() {
         super.onDetach()
         binding = null
@@ -226,10 +175,6 @@ class MainFragment() : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (outPutStream != null) {
-            outPutStream?.close()
-        }
-        ThreadUtil.getInstance()?.removeTimeListener(timeListener)
         binding = null
     }
 
@@ -245,12 +190,6 @@ class MainFragment() : Fragment() {
                 binding?.lineChart1?.addEntry(dataArray[0][i])
                 binding?.lineChart2?.addEntry(dataArray[1][i])
                 binding?.lineChart3?.addEntry(dataArray[2][i])
-
-                if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
-                    stringBuilder.append(dataArray[1][i]).append(" ")
-                    stringBuilder.append(dataArray[2][i]).append(" ")
-                }
             }
         } else if (dataArray.size == 6) {
             if (binding?.lineChart2?.visibility == View.GONE) {
@@ -261,23 +200,12 @@ class MainFragment() : Fragment() {
                 binding?.lineChart6?.visibility = View.VISIBLE
             }
             for (i in dataArray[0].indices) {
-                if (i != 0 && dataArray[0][i] == dataArray[0][i - 1]) {
-                    continue
-                }
                 binding?.lineChart1?.addEntry(dataArray[0][i])
                 binding?.lineChart2?.addEntry(dataArray[1][i])
                 binding?.lineChart3?.addEntry(dataArray[2][i])
                 binding?.lineChart4?.addEntry(dataArray[3][i])
                 binding?.lineChart5?.addEntry(dataArray[4][i])
                 binding?.lineChart6?.addEntry(dataArray[5][i])
-                if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
-                    stringBuilder.append(dataArray[1][i]).append(" ")
-                    stringBuilder.append(dataArray[2][i]).append(" ")
-                    stringBuilder.append(dataArray[3][i]).append(" ")
-                    stringBuilder.append(dataArray[4][i]).append(" ")
-                    stringBuilder.append(dataArray[5][i]).append(" ")
-                }
             }
         } else {
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
@@ -287,9 +215,6 @@ class MainFragment() : Fragment() {
 
             for (i in dataArray[0].indices) {
                 binding?.lineChart1?.addEntry(dataArray[0][i])
-                if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
-                }
             }
         }
     }

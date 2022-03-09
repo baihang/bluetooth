@@ -56,6 +56,12 @@ public class TestActivityA extends AppCompatActivity {
     }
 
     @Override
+    protected void onPause() {
+        Log.e(TAG, TAG_A + "onPause");
+        super.onPause();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
         Log.e(TAG, TAG_A + "onStop");

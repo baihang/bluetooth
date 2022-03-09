@@ -27,6 +27,7 @@ import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import com.example.healthy.utils.*
+import java.io.FileOutputStream
 import java.lang.StringBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -244,9 +245,25 @@ class DevicesViewModel(
                 } else {
                     strBuilder.append((dates[dates.size - 1] as BaseData).timeStamp)
                 }
+                saveToFile(strBuilder.toString())
                 NetWortUtil.upEcgData(title + strBuilder.toString())
             }
         }
+    }
+    private var outPutStream: FileOutputStream? = null
+    public var filePath: String? = null
+    private fun saveToFile(value: String) {
+        Log.e(TAG, "save to file")
+        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
+        if (outPutStream == null) {
+            val file =
+                LocalFileUtil.createFile(getApplication(), "heart", "${LocalFileUtil.getDateStr()}.txt")
+            filePath = file?.absolutePath
+            Log.e(TAG, "open file = ${file?.absolutePath}")
+            outPutStream = FileOutputStream(file)
+        }
+        outPutStream?.write(result.toByteArray())
+//        outPutStream?.flush()
     }
 
     private fun uploadLocation(){
@@ -303,6 +320,7 @@ class DevicesViewModel(
     fun onDestroy(activity: Activity?) {
         Log.e(TAG, "on destroy")
         bluetooth?.destroy(activity)
+        outPutStream?.close()
     }
 
 }

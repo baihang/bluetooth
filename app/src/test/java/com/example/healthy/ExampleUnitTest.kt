@@ -6,6 +6,9 @@ import com.example.healthy.data.HeartThreeData
 import org.junit.Test
 
 import org.junit.Assert.*
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
 import kotlin.experimental.and
 
 /**
@@ -23,7 +26,7 @@ class ExampleUnitTest {
     fun testHeartData() {
         val heart = HeartOneData()
         for (i in heart.bodyData.indices) {
-            heart.bodyData[i] = i.toShort()
+            heart.bodyData[i] = i
         }
         val result = heart.getData()
         assertEquals(result[0].size, 5)
@@ -33,7 +36,7 @@ class ExampleUnitTest {
     fun testHeartThree() {
         val three = HeartThreeData()
         for (i in three.bodyData.indices) {
-            three.bodyData[i] = i.toShort()
+            three.bodyData[i] = i
         }
         val result = three.getData()
         assertEquals(result[0].size, 2)

@@ -22,6 +22,8 @@ import com.example.healthy.data.BluetoothBroadCastReceiver
 import com.example.healthy.ui.main.DevicesViewModel
 import com.example.healthy.utils.ActivityHook
 import com.example.healthy.utils.SharedPreferenceUtil
+import java.security.SecureRandom
+import java.util.concurrent.CopyOnWriteArrayList
 
 class MainActivity : AppCompatActivity() {
 
