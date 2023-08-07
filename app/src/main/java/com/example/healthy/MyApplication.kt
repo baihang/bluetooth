@@ -10,7 +10,7 @@ import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.utils.LogUtil
 import com.example.healthy.utils.ThreadUtil
 import com.example.healthy.utils.TokenRefreshUtil
-import com.tencent.bugly.Bugly
+//import com.tencent.bugly.Bugly
 
 class MyApplication : Application() {
 
@@ -21,7 +21,7 @@ class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        if (BuildConfig.DEBUG) {
+        if (false) {
             StrictMode.setThreadPolicy(
                 StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build()
             )
@@ -31,7 +31,7 @@ class MyApplication : Application() {
         AbstractAppDataBase.getInstance(applicationContext)
         TokenRefreshUtil.getInstance(applicationContext)
         LogUtil.getInstance(applicationContext)
-        Bugly.init(applicationContext, BUGLY_APP_ID, true)
+//        Bugly.init(applicationContext, BUGLY_APP_ID, true)
     }
 
 }

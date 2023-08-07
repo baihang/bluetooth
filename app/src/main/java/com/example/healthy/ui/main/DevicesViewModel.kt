@@ -1,5 +1,6 @@
 package com.example.healthy.ui.main
 
+import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.bluetooth.*
@@ -7,6 +8,7 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -16,6 +18,7 @@ import android.os.Handler
 import android.util.Log
 import android.widget.Toast
 import androidx.collection.ArraySet
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData

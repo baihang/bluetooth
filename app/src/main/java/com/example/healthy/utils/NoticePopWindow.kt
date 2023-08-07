@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.PopupWindow
 import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.TextView
 import com.example.healthy.R
-import kotlinx.android.synthetic.main.notice_pop_window.view.*
 
 object NoticePopWindow {
 
@@ -22,7 +22,7 @@ object NoticePopWindow {
         val view = LayoutInflater.from(context.applicationContext)
             .inflate(R.layout.notice_pop_window, root, false)
         with(view) {
-            notice_view?.setOnClickListener {
+            findViewById<RelativeLayout>(R.id.notice_view)?.setOnClickListener {
                 dismiss()
             }
         }

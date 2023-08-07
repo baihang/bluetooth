@@ -14,10 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-import com.example.healthy.data.BaseData
-import com.example.healthy.data.HeartOneData
-import com.example.healthy.data.HeartSixData
-import com.example.healthy.data.HeartThreeData
+import com.example.healthy.data.*
 import okhttp3.internal.wait
 import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
@@ -61,7 +58,7 @@ object VirtualBluetooth : AbstractBluetooth() {
                             listener?.onDeviceStatusChange(STATUS_CONNECTED_SUCCESS)
                         }
                         MSG_RECEIVE_DATA -> {
-                            val data = getVirtualData(HeartOneData())
+                            val data = getVirtualData(HeartSix2Data())
                             listener?.onDataReceive(data, data.size)
                             receiveData()
                         }
@@ -75,6 +72,7 @@ object VirtualBluetooth : AbstractBluetooth() {
     }
 
     private fun getVirtualData(data: BaseData): ByteArray {
+        Log.e(TAG, "getVirtualData " + data.label)
         val result = ByteArray(data.headData.size + data.bodyData.size + data.trialData.size)
         for (i in result.indices) {
             if (i < data.headData.size) {

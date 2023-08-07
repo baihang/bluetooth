@@ -97,7 +97,9 @@ object NormalBluetooth : AbstractBluetooth() {
     override fun destroy(activity: Activity?) {
         stopScanDevice()
         isRunning = false
-        activity?.unregisterReceiver(receiver)
+        kotlin.runCatching {
+            activity?.unregisterReceiver(receiver)
+        }
     }
 
     override fun scanDevice(activity: Activity?) {

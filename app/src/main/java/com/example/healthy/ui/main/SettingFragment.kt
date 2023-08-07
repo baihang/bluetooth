@@ -13,8 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import com.example.healthy.R
 import com.example.healthy.chart.MyLineChart
+import com.example.healthy.databinding.FragmentSettingBinding
 import com.example.healthy.utils.SharedPreferenceUtil
-import kotlinx.android.synthetic.main.fragment_setting.*
 
 class SettingFragment : Fragment() {
 
@@ -22,12 +22,21 @@ class SettingFragment : Fragment() {
 
     private val TAG = "SettingFragment"
 
+    private var binding:FragmentSettingBinding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_setting, container, false)
+        val view = inflater.inflate(R.layout.fragment_setting, container, false);
+        binding = FragmentSettingBinding.bind(view)
+        return view
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     private val editor by lazy { SharedPreferenceUtil.getEditor(context) }
@@ -36,35 +45,35 @@ class SettingFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.serverUrl.observe(viewLifecycleOwner, Observer { it ->
-            service_url.setText(it)
+            binding?.serviceUrl?.setText(it)
         })
 
         viewModel.limitType.observe(viewLifecycleOwner, Observer { it ->
             if (it == 0){
-                limit_min?.visibility = View.GONE
-                limit_max?.visibility = View.GONE
+                binding?.limitMin?.visibility = View.GONE
+                binding?.limitMax?.visibility = View.GONE
             }else{
-                limit_min?.visibility = View.VISIBLE
-                limit_max?.visibility = View.VISIBLE
+                binding?.limitMin?.visibility = View.VISIBLE
+                binding?.limitMax?.visibility = View.VISIBLE
             }
-            if(limit_type.selectedItemPosition != it){
-                limit_type.setSelection(it)
+            if(binding?.limitType?.selectedItemPosition != it){
+                binding?.limitType?.setSelection(it)
             }
         })
 
         viewModel.limitMax.observe(viewLifecycleOwner, Observer { it ->
-            limit_max?.setText(it.toString())
+            binding?.limitMax?.setText(it.toString())
         })
 
         viewModel.limitMin.observe(viewLifecycleOwner, Observer { it ->
-            limit_min?.setText(it.toString())
+            binding?.limitMin?.setText(it.toString())
         })
 
         viewModel.xMax.observe(viewLifecycleOwner, Observer {
-            x_max?.setText(it.toString())
+            binding?.xMax?.setText(it.toString())
         })
 
-        limit_type?.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
+        binding?.limitType?.onItemSelectedListener = object :AdapterView.OnItemSelectedListener{
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
@@ -84,22 +93,22 @@ class SettingFragment : Fragment() {
 
         }
 
-        x_max?.addTextChangedListener {
+        binding?.xMax?.addTextChangedListener {
             if(it.toString().isEmpty()){
                 return@addTextChangedListener
             }
             viewModel.setxMax(context, it?.toString()?.toInt() ?: MyLineChart.MAX_X_LENGTH)
         }
 
-        limit_max?.addTextChangedListener(afterTextChangedListener)
-        limit_min?.addTextChangedListener(afterTextChangedListener)
-        service_url?.addTextChangedListener(afterTextChangedListener)
+        binding?.limitMax?.addTextChangedListener(afterTextChangedListener)
+        binding?.limitMin?.addTextChangedListener(afterTextChangedListener)
+        binding?.serviceUrl?.addTextChangedListener(afterTextChangedListener)
 
-        login_out?.setOnClickListener {
+        binding?.loginOut?.setOnClickListener {
             viewModel.loginOut(context)
         }
 
-        visitor?.setOnClickListener {
+        binding?.visitor?.setOnClickListener {
             viewModel.visitor(context)
         }
     }
@@ -117,16 +126,16 @@ class SettingFragment : Fragment() {
             val editor = SharedPreferenceUtil.getEditor(context)
             var max = -1
             var min = -1
-            if(limit_max.text.toString().isNotEmpty()){
-                max = limit_max.text.toString().toInt()
+            if(binding?.limitMax?.text.toString().isNotEmpty()){
+                max = binding?.limitMax?.text.toString().toInt()
             }
-            if(limit_min.text.toString().isNotEmpty()){
-                min = limit_min.text.toString().toInt()
+            if(binding?.limitMin?.text.toString().isNotEmpty()){
+                min = binding?.limitMin?.text.toString().toInt()
             }
             editor?.putInt(SettingViewModel.LIMIT_MAX, max)
             editor?.putInt(SettingViewModel.LIMIT_MIN, min)
 
-            editor?.putString(SettingViewModel.SERVER_URL, service_url.text.toString())
+            editor?.putString(SettingViewModel.SERVER_URL, binding?.serviceUrl?.text.toString())
             editor?.apply()
         }
     }

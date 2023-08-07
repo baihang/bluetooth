@@ -23,8 +23,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
 import com.example.healthy.ui.main.SettingViewModel
 import com.example.healthy.utils.*
-import kotlinx.android.synthetic.main.fragment_login.*
-
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class LoginFragment : Fragment() {
 
@@ -139,13 +138,13 @@ class LoginFragment : Fragment() {
 //            socketUtil.connectSocket()
         }
 
-        to_sms.setOnClickListener {
+        getView()?.findViewById<Button>(R.id.to_sms)?.setOnClickListener {
             findNavController().navigate(R.id.LoginBySmsFragment)
         }
 
         var socketUtil: TestSocketUtil? = null
 
-        visitor.setOnClickListener {
+        getView()?.findViewById<FloatingActionButton>(R.id.visitor)?.setOnClickListener {
 //            testBinderService(context)
 //            testMessenger(context)
             loginViewModel.login(loginViewModel.VISITOR, "")

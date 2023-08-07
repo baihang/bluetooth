@@ -18,12 +18,12 @@ import androidx.lifecycle.ViewModelStore
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
 import com.example.healthy.bean.UserSetting
+import com.example.healthy.databinding.FragmentLoginSmsBinding
 import com.example.healthy.ui.main.SettingViewModel
 import com.example.healthy.utils.JsonUtil
 import com.example.healthy.utils.NetWortUtil
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.android.synthetic.main.fragment_login_sms.*
 
 class LoginBySmsFragment : Fragment() {
 
@@ -37,27 +37,36 @@ class LoginBySmsFragment : Fragment() {
         )
     }
 
+    private var binding:FragmentLoginSmsBinding? = null
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_login_sms, container, false)
+        val view = inflater.inflate(R.layout.fragment_login_sms, container, false)
+        binding = FragmentLoginSmsBinding.bind(view)
+        return view
+    }
+
+    override fun onDestroyView() {
+        binding = null
+        super.onDestroyView()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        sms_get.setOnClickListener {
-            viewModel.postGetSms(mobile_et.text.toString())
+        binding?.smsGet?.setOnClickListener {
+            viewModel.postGetSms(binding?.mobileEt?.text.toString())
         }
 
-        login.setOnClickListener {
-            val mobile = mobile_et.text.toString().trim()
+        binding?.login?.setOnClickListener {
+            val mobile = binding?.mobileEt?.text.toString().trim()
             val st = SharedPreferenceUtil.getItem(context, mobile)
             val user = JsonUtil.jsonStr2Object(st, UserSetting::class.java)
             if (user == null) {
                 Snackbar.make(this.requireView(), "请重新获取验证码！", Snackbar.LENGTH_LONG).show()
             } else {
-                viewModel.loginBySms(mobile, sms_et.text.toString(), user.vk)
+                viewModel.loginBySms(mobile, binding?.smsEt?.text.toString(), user.vk)
             }
         }
 
@@ -69,12 +78,12 @@ class LoginBySmsFragment : Fragment() {
 //            }
 //        }
 
-        mobile_et.setText(viewModel.userName)
+        binding?.mobileEt?.setText(viewModel.userName)
 
         viewModel.smsStatus.observe(viewLifecycleOwner, Observer { sms ->
             if (sms?.message != null && sms.message.startsWith("测试环境")) {
                 val code = Regex("[0-9]+").find(sms.message)
-                sms_et.setText(code?.value.toString())
+                binding?.smsEt?.setText(code?.value.toString())
             }
             val userSetting = SharedPreferenceUtil.getUserSetting(context, viewModel.userName)
             if (userSetting.vk != sms.result.vk) {

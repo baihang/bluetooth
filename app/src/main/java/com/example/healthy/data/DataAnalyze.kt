@@ -40,6 +40,8 @@ class DataAnalyze {
             HeartThreeData(),
             PulseData(),
             HeartSixData(),
+            TemperatureData(),
+            HeartSix2Data(),
         )
     }
 
@@ -109,7 +111,7 @@ class DataAnalyze {
                             }
                         }
                         else ->{
-                            if(byte == dataPackage?.headData?.get(headStatus) ?: 0){
+                            if(byte == (dataPackage?.headData?.get(headStatus) ?: 0)){
                                 headStatus++
                                 if (headStatus >= headLength) {
                                     status = STATUS_BODY

@@ -98,7 +98,7 @@
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="10dp"
                 android:padding="3dp"
-                android:text="流量："
+                android:text="温度："
                 android:textColor="@color/black"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />

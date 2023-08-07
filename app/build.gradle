@@ -1,11 +1,9 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
-apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 29
-    buildToolsVersion "30.0.1"
 
     defaultConfig {
         applicationId "com.example.healthy"
@@ -27,6 +25,7 @@ android {
 
     buildFeatures {
         dataBinding = true
+        viewBinding = true
     }
 
     buildTypes {
@@ -88,6 +87,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.0.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'androidx.leanback:leanback:1.0.0'
 
     //room
     def room_version = "2.3.0"
@@ -124,4 +124,11 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     debugImplementation 'androidx.fragment:fragment-testing:1.2.5'
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:2.6'
+
+    //camera
+    implementation "androidx.camera:camera-camera2:1.0.0"
+    implementation "androidx.camera:camera-core:1.0.0"
+    implementation "androidx.camera:camera-lifecycle:1.0.0"
+//    implementation "androidx.camera:camera-view:1.0.0"
+
 }

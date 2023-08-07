@@ -44,6 +44,10 @@ class MainActivity : AppCompatActivity() {
         if(shared?.getBoolean("isLogin", false) == false){
             findNavController(R.id.nav_host_fragment).navigate(R.id.LoginFragment)
         }
+
+        //test
+//        val intent = Intent(this, CameraActivity::class.java);
+//        startActivity(intent)
     }
 
     override fun onStart() {

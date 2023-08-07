@@ -21,6 +21,7 @@ import com.example.healthy.chart.MyLineChart
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
+import com.example.healthy.data.TemperatureData
 import com.example.healthy.databinding.MainFragmentBinding
 import com.example.healthy.utils.LocalFileUtil
 import com.example.healthy.utils.NoticePopWindow
@@ -64,11 +65,11 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
-            val heart = HeartSixData()
+            val heart = TemperatureData()
             val k = (Math.random() * 10).toInt()
             for (i in heart.bodyData.indices) {
-//                heart.bodyData[i] = (Math.random() * 10).toInt()
-                heart.bodyData[i] = i
+                heart.bodyData[i] = (Math.random() * 10).toInt()
+//                heart.bodyData[i] = i + 1
             }
             viewModel.resultValue.postValue(heart)
         }
@@ -90,17 +91,21 @@ class MainFragment() : Fragment() {
         binding?.mainSaveTimeTv?.setOnClickListener {
             val patch = filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
             val file = File(patch)
-            if(!file.exists()){
+            if (!file.exists()) {
                 return@setOnClickListener
             }
-            val uri = FileProvider.getUriForFile(requireContext(), requireContext().applicationContext.packageName + ".provider", file)
+            val uri = FileProvider.getUriForFile(
+                requireContext(),
+                requireContext().applicationContext.packageName + ".provider",
+                file
+            )
             val intent = Intent(Intent.ACTION_VIEW)
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             intent.setDataAndType(uri, "*/*")
             Log.e(TAG, "to file patch $patch")
             try {
                 startActivity(intent)
-            }catch (e : ActivityNotFoundException){
+            } catch (e: ActivityNotFoundException) {
                 Snackbar.make(binding!!.mainSaveBt, "打开文件夹失败", Snackbar.LENGTH_LONG).show()
             }
         }
@@ -136,13 +141,16 @@ class MainFragment() : Fragment() {
         }
 
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
-            addValue(data)
+            if (data is TemperatureData) {
+                binding?.mainFlow?.setText("温度： ${((data.bodyData[0] + data.bodyData[1] * 256) * 100 / 16)  / 100f} ℃")
+            } else
+                addValue(data)
         }
 
-        viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
-            val data = 10000 / it
-            binding?.mainFlow?.setText("流量： $data p/s")
-        })
+//        viewModel.timeStampLive.observe(viewLifecycleOwner, Observer {
+//            val data = 10000 / it
+//            binding?.mainFlow?.setText("流量： $data p/s")
+//        })
 
     }
 
@@ -210,7 +218,7 @@ class MainFragment() : Fragment() {
             Log.e(TAG, "open file = ${file?.absolutePath}")
             outPutStream = FileOutputStream(file)
         }
-        outPutStream?.write(result.toByteArray())
+//        outPutStream?.write(result.toByteArray())
 //        outPutStream?.flush()
     }
 
@@ -279,7 +287,22 @@ class MainFragment() : Fragment() {
                     stringBuilder.append(dataArray[5][i]).append(" ")
                 }
             }
-        } else {
+        } else if(dataArray.size == 2){
+            if (binding?.lineChart3?.visibility == View.VISIBLE) {
+                binding?.lineChart3?.visibility = View.GONE
+            }
+
+            for (i in dataArray[0].indices) {
+                binding?.lineChart1?.addEntry(dataArray[0][i])
+                binding?.lineChart2?.addEntry(dataArray[1][i])
+                binding?.lineChart2?.visibility = View.VISIBLE
+                if (timeInterval != -1) {
+                    stringBuilder.append(dataArray[0][i]).append(" ")
+                    stringBuilder.append(dataArray[1][i]).append(" ")
+                }
+            }
+        }
+        else {
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
                 binding?.lineChart2?.visibility = View.GONE
                 binding?.lineChart3?.visibility = View.GONE

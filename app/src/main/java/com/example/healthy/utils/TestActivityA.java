@@ -4,12 +4,16 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.util.Log;
+import android.util.SparseIntArray;
 import android.view.View;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.healthy.R;
+
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class TestActivityA extends AppCompatActivity {
 
@@ -36,7 +40,7 @@ public class TestActivityA extends AppCompatActivity {
         super.onStart();
         Log.e(TAG, TAG_A + "onStart");
     }
-
+private HashMap<Integer, HashMap<Integer, HashMap<Integer, Integer>>> temp = new HashMap<>();
     @Override
     protected void onResume() {
         super.onResume();
@@ -47,6 +51,7 @@ public class TestActivityA extends AppCompatActivity {
     protected void onRestart() {
         super.onRestart();
         Log.e(TAG, TAG_A + "onRestart");
+
     }
 
     @Override

@@ -12,9 +12,7 @@ abstract class BaseData : Cloneable {
         const val HEAD_LENGTH = 4
 
         fun getDataType(value1: Int, value2: Int): BaseData? {
-            val type: Int = value1.shl(8) + value2
-//            Log.e(TAG, "type = $type")
-            return when (type) {
+            return when (value1.shl(8) + value2) {
                 0xAA07 -> {
                     HeartOneData()
                 }
@@ -27,7 +25,12 @@ abstract class BaseData : Cloneable {
                 0xDA07 -> {
                     HeartSixData()
                 }
+                0xBA07 -> HeartSix2Data()
+                0xDA04 -> {
+                    TemperatureData()
+                }
                 else -> {
+                    Log.e(TAG, "receive unable type data")
                     null
                 }
             }

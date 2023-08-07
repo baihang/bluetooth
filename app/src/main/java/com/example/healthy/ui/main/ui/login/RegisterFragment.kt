@@ -11,7 +11,7 @@ import androidx.lifecycle.observe
 import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
-import kotlinx.android.synthetic.main.fragment_sign_up.*
+import com.example.healthy.databinding.FragmentSignUpBinding
 
 class RegisterFragment : Fragment() {
 
@@ -19,25 +19,27 @@ class RegisterFragment : Fragment() {
         ViewModelProvider(this, LoginViewModelFactory())
             .get(LoginViewModel::class.java)
     }
-
+    private var binding:FragmentSignUpBinding? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.fragment_sign_up, container, false)
+        val view = inflater.inflate(R.layout.fragment_sign_up, container, false)
+        binding = FragmentSignUpBinding.bind(view)
+        return view
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        sign_up?.setOnClickListener {
-            loading.visibility = View.VISIBLE
+        binding?.signUp?.setOnClickListener {
+            binding?.loading?.visibility = View.VISIBLE
             viewModel.register(
-                nick.text.toString(),
-                real_name.text.toString(),
-                mobile.text.toString(),
-                password.text.toString()
+                binding?.nick?.text.toString(),
+                binding?.realName?.text.toString(),
+                binding?.mobile?.text.toString(),
+                binding?.password?.text.toString()
             )
         }
 
@@ -46,7 +48,7 @@ class RegisterFragment : Fragment() {
 
             })
 
-        to_login?.setOnClickListener {
+        binding?.toLogin?.setOnClickListener {
             findNavController().navigate(R.id.LoginFragment)
         }
     }
