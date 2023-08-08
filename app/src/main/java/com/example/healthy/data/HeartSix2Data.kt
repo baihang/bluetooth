@@ -8,7 +8,7 @@ class HeartSix2Data : HeartThreeData() {
         headData = arrayOf(0xAA, 0xBA, 0x07, 0x03)
         dataInit()
         valueArray = Array(2, init = {
-            Array(150, init = {0})
+            Array(128, init = {0})
         })
         bodyData = Array(900, init = { 0 })
     }

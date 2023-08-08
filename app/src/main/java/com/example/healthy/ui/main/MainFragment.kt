@@ -210,7 +210,8 @@ class MainFragment() : Fragment() {
             value = stringBuilder.toString()
             stringBuilder.clear()
         }
-        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
+//        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
+        val result = "$value\n"
         if (outPutStream == null) {
             val file =
                 LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
@@ -218,7 +219,7 @@ class MainFragment() : Fragment() {
             Log.e(TAG, "open file = ${file?.absolutePath}")
             outPutStream = FileOutputStream(file)
         }
-//        outPutStream?.write(result.toByteArray())
+        outPutStream?.write(result.toByteArray())
 //        outPutStream?.flush()
     }
 
