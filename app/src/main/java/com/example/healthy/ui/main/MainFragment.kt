@@ -27,9 +27,15 @@ import com.example.healthy.utils.LocalFileUtil
 import com.example.healthy.utils.NoticePopWindow
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.example.healthy.utils.ThreadUtil
+import com.example.healthy.utils.loge
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.coroutines.CoroutineContext
 
 class MainFragment() : Fragment() {
 
@@ -56,6 +62,14 @@ class MainFragment() : Fragment() {
         initLineChart()
 
         binding?.mainSetting?.setOnClickListener {
+//            findNavController().navigate(R.id.SettingFragment)
+            CoroutineScope(Dispatchers.IO).launch {
+                runBlocking {
+                    val result =
+                        viewModel.uploadEcg("/storage/emulated/0/Android/data/com.example.healthy/files/heart/20230719172459-89-original")
+                    loge("result = $result")
+                }
+            }
 //            anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
@@ -65,13 +79,13 @@ class MainFragment() : Fragment() {
 
             //测试 Manager
 //            RxManagerUtil.getInstance().load(loadListener, 1)
-            val heart = TemperatureData()
-            val k = (Math.random() * 10).toInt()
-            for (i in heart.bodyData.indices) {
-                heart.bodyData[i] = (Math.random() * 10).toInt()
-//                heart.bodyData[i] = i + 1
-            }
-            viewModel.resultValue.postValue(heart)
+//            val heart = TemperatureData()
+//            val k = (Math.random() * 10).toInt()
+//            for (i in heart.bodyData.indices) {
+//                heart.bodyData[i] = (Math.random() * 10).toInt()
+////                heart.bodyData[i] = i + 1
+//            }
+//            viewModel.resultValue.postValue(heart)
         }
 
         binding?.mainSetting?.setOnLongClickListener {
@@ -142,7 +156,7 @@ class MainFragment() : Fragment() {
 
         viewModel.resultValue.observe(viewLifecycleOwner) { data ->
             if (data is TemperatureData) {
-                binding?.mainFlow?.setText("温度： ${((data.bodyData[0] + data.bodyData[1] * 256) * 100 / 16)  / 100f} ℃")
+                binding?.mainFlow?.setText("温度： ${((data.bodyData[0] + data.bodyData[1] * 256) * 100 / 16) / 100f} ℃")
             } else
                 addValue(data)
         }
@@ -211,7 +225,7 @@ class MainFragment() : Fragment() {
             stringBuilder.clear()
         }
 //        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
-        val result = "$value\n"
+        val result = "$value "
         if (outPutStream == null) {
             val file =
                 LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
@@ -220,7 +234,7 @@ class MainFragment() : Fragment() {
             outPutStream = FileOutputStream(file)
         }
         outPutStream?.write(result.toByteArray())
-//        outPutStream?.flush()
+        outPutStream?.flush()
     }
 
     override fun onDetach() {
@@ -288,7 +302,7 @@ class MainFragment() : Fragment() {
                     stringBuilder.append(dataArray[5][i]).append(" ")
                 }
             }
-        } else if(dataArray.size == 2){
+        } else if (dataArray.size == 2) {
             if (binding?.lineChart3?.visibility == View.VISIBLE) {
                 binding?.lineChart3?.visibility = View.GONE
             }
@@ -299,11 +313,10 @@ class MainFragment() : Fragment() {
                 binding?.lineChart2?.visibility = View.VISIBLE
                 if (timeInterval != -1) {
                     stringBuilder.append(dataArray[0][i]).append(" ")
-                    stringBuilder.append(dataArray[1][i]).append(" ")
+//                    stringBuilder.append(dataArray[1][i]).append(" ")
                 }
             }
-        }
-        else {
+        } else {
             if (binding?.lineChart2?.visibility == View.VISIBLE) {
                 binding?.lineChart2?.visibility = View.GONE
                 binding?.lineChart3?.visibility = View.GONE

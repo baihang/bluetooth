@@ -52,4 +52,9 @@
         android:label="Sms Fragment"
         tools:layout="@layout/fragment_login_sms"/>
 
+    <fragment android:id="@+id/DataFragment"
+        android:name="com.example.healthy.ui.main.DataFragment"
+        android:label="Data"
+        tools:layout="@layout/fragment_data"/>
+
 </navigation>

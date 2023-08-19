@@ -45,15 +45,15 @@
         android:id="@+id/sms_get"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
+        android:background="@color/colorAccent"
         android:text="@string/sms_get"
         android:textColor="@color/black"
-        android:background="@color/colorAccent"
-        app:layout_constraintTop_toTopOf="@+id/sms_et"
         app:layout_constraintBottom_toBottomOf="@+id/sms_et"
-        android:layout_marginEnd="24dp"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/sms_et" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/login"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,7 +62,8 @@
         android:layout_marginTop="206dp"
         android:layout_marginEnd="48dp"
         android:layout_marginBottom="84dp"
-        android:background="@color/colorPrimaryDark"
+        android:backgroundTint="@color/colorPrimaryDark"
+        android:background="@drawable/shape_26_radius"
         android:text="@string/action_sign_in"
         android:textColor="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -76,7 +76,7 @@ class MyLineChart : LineChart {
     }
 
     override fun invalidate() {
-        data.notifyDataChanged()
+        data?.notifyDataChanged()
         notifyDataSetChanged()
         super.invalidate()
     }

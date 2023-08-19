@@ -16,18 +16,21 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.Headers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -40,17 +43,20 @@ public class NetWortUtil {
 
     private static volatile boolean tokenGetting = false;
 
-    public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn";
+    public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn:81";
 
     public static final String BASE_URL_KER = "https://api.yurui1021.com";
 
-    private static String base_url = BASE_URL_KER;
+    private static String base_url = DEFAULT_BASE_URL;
 
     public static final MediaType JSON
             = MediaType.get("application/json; charset=utf-8");
 
     private final static OkHttpClient client = new OkHttpClient().newBuilder()
             .eventListenerFactory(NetWorkEventListener.Companion.getFACTORY())
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
             .build();
 
     public static void refreshUrl(Context context) {
@@ -62,9 +68,11 @@ public class NetWortUtil {
         return base_url + url;
     }
 
-    private static Headers getHeaders(){
+    private static Headers getHeaders() {
         Headers.Builder builder = new Headers.Builder();
-        builder.add("token", TokenRefreshUtil.getInstance().getToken());
+//        builder.add("token", TokenRefreshUtil.getInstance().getToken());
+        builder.add("Content-Type", "application/json");
+//        builder.add("Content-Type", "multipart/form-data");
         return builder.build();
     }
 
@@ -78,8 +86,10 @@ public class NetWortUtil {
                 .headers(getHeaders())
                 .post(body)
                 .build();
+        Log.e("tag", "body = " + body);
         try {
             Response response = client.newCall(request).execute();
+            Log.e("network", "post response = " + response);
             return new NetworkBean<>(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,6 +120,22 @@ public class NetWortUtil {
         return post(url, builder.build());
     }
 
+    public static NetworkBean<String> postMulti(String url, Map<String, Object> params) {
+        MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        for (String item : params.keySet()) {
+            Object value = params.get(item);
+            if (value instanceof File) {
+                Log.e(TAG, "postMulti: File " + ((File) value).getName());
+                builder.addFormDataPart(item, ((File) value).getName(),
+                        RequestBody.create((File) value, MediaType.parse("text/plain")));
+            } else if (value != null) {
+                Log.e(TAG, "postMulti: String " + value.toString());
+                builder.addFormDataPart(item, value.toString());
+            }
+        }
+        return post(url, builder.build());
+    }
+
     public static final MediaType MEDIA_TYPE_MARKDOWN
             = MediaType.parse("text/x-markdown; charset=utf-8");
 
@@ -135,7 +161,7 @@ public class NetWortUtil {
         return post(url, body);
     }
 
-    public static NetworkBean<String> uploadHBUData(String param){
+    public static NetworkBean<String> uploadHBUData(String param) {
         String url = "https://www.vipmember.com.cn/uploadEcg";
         JSONObject json = new JSONObject();
         RequestBody body = RequestBody.create(param, MEDIA_TYPE_MARKDOWN);
@@ -150,14 +176,14 @@ public class NetWortUtil {
         return post(url, map);
     }
 
-    public static synchronized UserSetting getToken(Context context){
-        if(tokenGetting){
+    public static synchronized UserSetting getToken(Context context) {
+        if (tokenGetting) {
             return null;
         }
         String url = "/token";
         JSONObject json = new JSONObject();
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, null);
-        if(userSetting.pk == null || userSetting.pk.isEmpty()){
+        if (userSetting.pk == null || userSetting.pk.isEmpty()) {
             return null;
         }
         try {
@@ -174,13 +200,13 @@ public class NetWortUtil {
         NetworkBean<String> result = post(url, json.toString());
         tokenGetting = false;
 
-        if(result.isSucceed){
+        if (result.isSucceed) {
             Log.d(TAG, "token result = " + result + " request = " + json.toString());
             TokenBean token = JsonUtil.jsonStr2Object(result.data, TokenBean.class);
-            if(!token.success){
+            if (!token.success) {
                 return null;
             }
-            if(userSetting.token == null || !userSetting.token.equals(token.result.token)){
+            if (userSetting.token == null || !userSetting.token.equals(token.result.token)) {
                 userSetting.token = token.result.token;
                 userSetting.tokenTime = token.result.expires + (System.currentTimeMillis() / 1000);
                 Log.e(TAG, "token expires = " + token.result.expires + " token time = " + userSetting.tokenTime);
@@ -190,12 +216,12 @@ public class NetWortUtil {
             SharedPreferences.Editor editor = shared.edit();
             String user_name = shared.getString(SharedPreferenceUtil.CURRENT_USER, userSetting.userName);
             editor.putString(user_name, JsonUtil.object2String(userSetting));
-            if(userSetting.apiServer.equals(shared.getString(URL, ""))){
+            if (userSetting.apiServer.equals(shared.getString(URL, ""))) {
                 base_url = userSetting.apiServer;
                 editor.putString(URL, userSetting.apiServer);
             }
-            if(userSetting.userName != null && userSetting.userName.length() != 0 &&
-                    !shared.getString(SharedPreferenceUtil.CURRENT_USER, "").equals(userSetting.userName)){
+            if (userSetting.userName != null && userSetting.userName.length() != 0 &&
+                    !shared.getString(SharedPreferenceUtil.CURRENT_USER, "").equals(userSetting.userName)) {
                 editor.putString(SharedPreferenceUtil.CURRENT_USER, userSetting.userName);
             }
             editor.apply();

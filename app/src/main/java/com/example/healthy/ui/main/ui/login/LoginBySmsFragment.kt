@@ -1,5 +1,7 @@
 package com.example.healthy.ui.main.ui.login
 
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModel
@@ -37,7 +40,7 @@ class LoginBySmsFragment : Fragment() {
         )
     }
 
-    private var binding:FragmentLoginSmsBinding? = null
+    private var binding: FragmentLoginSmsBinding? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,15 +62,25 @@ class LoginBySmsFragment : Fragment() {
             viewModel.postGetSms(binding?.mobileEt?.text.toString())
         }
 
+        binding?.smsEt?.addTextChangedListener { text ->
+            refreshButton(binding?.mobileEt?.text?.toString(), text?.toString())
+        }
+
+        binding?.mobileEt?.addTextChangedListener { text ->
+            refreshButton(text?.toString(), binding?.smsEt?.text?.toString())
+        }
+
         binding?.login?.setOnClickListener {
-            val mobile = binding?.mobileEt?.text.toString().trim()
-            val st = SharedPreferenceUtil.getItem(context, mobile)
-            val user = JsonUtil.jsonStr2Object(st, UserSetting::class.java)
-            if (user == null) {
-                Snackbar.make(this.requireView(), "请重新获取验证码！", Snackbar.LENGTH_LONG).show()
-            } else {
-                viewModel.loginBySms(mobile, binding?.smsEt?.text.toString(), user.vk)
-            }
+            val mobile = binding?.mobileEt?.text?.toString()?.trim()
+//            val st = SharedPreferenceUtil.getItem(context, mobile)
+//            val user = JsonUtil.jsonStr2Object(st, UserSetting::class.java)
+//            if (user == null) {
+//                Snackbar.make(this.requireView(), "请重新获取验证码！", Snackbar.LENGTH_LONG).show()
+//            } else {
+            val code = binding?.smsEt?.text?.toString()?.trim()
+            if (mobile.isNullOrEmpty() || code.isNullOrEmpty()) return@setOnClickListener
+            viewModel.loginBySms(mobile, code)
+//            }
         }
 
 //        if (Build.VERSION.SDK_INT > 29) {
@@ -97,9 +110,9 @@ class LoginBySmsFragment : Fragment() {
         viewModel.loginStatus.observe(viewLifecycleOwner, Observer { it ->
             val userSetting = SharedPreferenceUtil.getUserSetting(context, viewModel.userName)
             val editor = SharedPreferenceUtil.getEditor(context)
-            if (userSetting.pk != it.result.pk) {
-                userSetting.pk = it.result.pk
-                userSetting.userId = it.result.userid.toString()
+            if (userSetting.pk != it.token) {
+                userSetting.pk = it.token
+                userSetting.userId = it.id.toString()
                 editor?.putString(viewModel.userName, JsonUtil.object2String(userSetting))
             }
             editor?.putBoolean(SettingViewModel.LOGIN_STATUS, true)
@@ -110,6 +123,13 @@ class LoginBySmsFragment : Fragment() {
         })
     }
 
+    private fun refreshButton(mobile: String?, code: String?) {
+        if (mobile.isNullOrEmpty() || code.isNullOrEmpty()) {
+            binding?.login?.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#c2c2c2"))
+        } else {
+            binding?.login?.backgroundTintList = null
+        }
+    }
 
 
 }

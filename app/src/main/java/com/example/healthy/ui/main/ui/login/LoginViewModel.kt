@@ -8,6 +8,7 @@ import android.util.Patterns
 import androidx.core.text.isDigitsOnly
 import com.example.healthy.R
 import com.example.healthy.bean.AbstractLoadBean
+import com.example.healthy.bean.CodeLoginBean
 import com.example.healthy.bean.LoginBean
 import com.example.healthy.bean.NetworkBean
 import com.example.healthy.bean.SmsBean
@@ -32,7 +33,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     val registerResult = MutableLiveData<LoginResult>()
     val smsStatus = MutableLiveData<SmsBean>()
-    val loginStatus = MutableLiveData<LoginBean>()
+    val loginStatus = MutableLiveData<CodeLoginBean>()
 
     var userName = ""
     private var password = ""
@@ -71,12 +72,22 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         }
 
         override fun loadSucceed(bean: AbstractLoadBean<*>?) {
-            if (bean == null) return
+            if (bean == null) {
+                _loginResult.value = LoginResult(
+                    error = "error code = ${(bean as NetworkBean).err_code}"
+                )
+                return
+            }
+
             if (bean.tag == TYPE_LOGIN_GET_SMS) {
                 getSmsSuccess(bean.data.toString())
                 return
             } else if (bean.tag == TYPE_LOGIN_SMS_LOGIN) {
                 smsLoginSuccess(bean.data.toString())
+            } else {
+                _loginResult.value = LoginResult(
+                    error = "error code = ${(bean as NetworkBean).err_code}"
+                )
             }
 
         }
@@ -103,11 +114,11 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         RxManagerUtil.getInstance().load(utilManagerListener, TYPE_LOGIN_PASSWORD)
     }
 
-    fun loginBySms(phone: String, code: String, vk: String) {
-        if (isPhoneValid(phone) && code.length > 4) {
+    fun loginBySms(phone: String, code: String, vk: String? = null) {
+        if (isPhoneValid(phone) && code.length >= 4) {
             this.userName = phone
             this.smsCode = code
-            this.vk = vk
+//            this.vk = vk
             RxManagerUtil.getInstance().load(utilManagerListener, TYPE_LOGIN_SMS_LOGIN)
         }
     }
@@ -119,38 +130,44 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
 
     //{"success":true,"message":"操作成功！","code":200,"result":{"pk":"ulvvdcmlbxhv499c","userid":1698596},"timestamp":1635233991333}
     private fun smsLoginSuccess(result: String) {
-        val bean = JsonUtil.jsonStr2Object(result, LoginBean::class.java)
+        val bean = JsonUtil.jsonStr2Object(result, CodeLoginBean::class.java)
+        Log.e("smsLoginSuccess", "bean = $bean")
         loginStatus.postValue(bean)
         _loginResult.value = LoginResult(
-            success = LoggedInUserView(displayName = bean?.result?.userid.toString())
+            success = LoggedInUserView(displayName = bean?.name ?: "未命名")
         )
         RxManagerUtil.getInstance().load(utilManagerListener, TYPE_REFRESH_TOKEN)
     }
 
     private fun smsLogin(userName: String, smsCode: String, vk: String): NetworkBean<String> {
-        val param = JSONObject();
-        param.put("mobile", userName)
-        param.put("captcha", smsCode)
-        param.put("vk", vk)
-        return NetWortUtil.post("/login", param.toString())
+        val param = HashMap<String, String>()
+        param["phonenum"] = userName
+        param["vcode"] = smsCode
+//        param.put("mobile", userName)
+//        param.put("captcha", smsCode)
+//        param.put("vk", vk)
+//        return NetWortUtil.post("/login", param.toString())
+        return NetWortUtil.post("/user/vcodelogin", param)
     }
 
     private fun getSms(phone: String): NetworkBean<String> {
         if (isPhoneValid(phone)) {
             val param = JSONObject()
-            param.put("mobile", phone)
-            return NetWortUtil.post("/sms", param.toString())
+            param.put("phonenum", phone)
+            val map = HashMap<String, String>()
+            map["phonenum"] = phone
+            return NetWortUtil.post("/user/mobilecode", map)
         }
         return NetworkBean(-1, "手机号无效！")
     }
 
     private fun getSmsSuccess(result: String) {
-        val smsBean = JsonUtil.jsonStr2Object(result, SmsBean::class.java)
-        if (smsBean != null && smsBean.success) {
-            smsStatus.value = smsBean
-        } else {
-            _loginForm.value = LoginFormState(usernameError = R.string.sms_get_fail)
-        }
+//        val smsBean = JsonUtil.jsonStr2Object(result, SmsBean::class.java)
+//        if (smsBean != null && smsBean.success) {
+//            smsStatus.value = smsBean
+//        } else {
+//            _loginForm.value = LoginFormState(usernameError = R.string.sms_get_fail)
+//        }
     }
 
     fun register(nick: String, name: String, mobile: String, password: String) {
@@ -186,7 +203,7 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
         return if (username.contains("@")) {
             Patterns.EMAIL_ADDRESS.matcher(username).matches()
         } else {
-            username.isNotBlank()
+            username.length == 11
         }
     }
 

@@ -60,6 +60,9 @@ public class TokenRefreshUtil {
 
     public String getToken(){
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, "");
+        if(true){
+            return userSetting.pk;
+        }
         if(userSetting.token == null || userSetting.tokenTime < (System.currentTimeMillis() / 1000)){
             Log.e("getToken", " token " + userSetting.tokenTime + " time = " + (System.currentTimeMillis() / 1000) );
             userSetting = refreshToken();
@@ -75,4 +78,8 @@ public class TokenRefreshUtil {
         return userSetting.token;
     }
 
+    public static String getUserId(Context context){
+        UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, "");
+        return userSetting.userId;
+    }
 }

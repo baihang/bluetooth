@@ -1,11 +1,16 @@
 package com.example.healthy.utils
 
 import android.content.Context
+import android.util.Log
 import java.io.File
 import java.lang.Exception
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+
+inline fun loge(msg: String){
+    Log.e("loge", msg)
+}
 
 /**
  * 本地文件存储

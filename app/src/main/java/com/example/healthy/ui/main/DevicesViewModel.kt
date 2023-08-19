@@ -30,6 +30,7 @@ import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import com.example.healthy.utils.*
+import java.io.File
 import java.lang.StringBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -48,7 +49,7 @@ class DevicesViewModel(
      * false normal
      */
     private var bleOrNormal = true
-    private val DEBUG = false
+    private val DEBUG = true
     private val isUploadData = true
     private var bluetooth: AbstractBluetooth? = null
 
@@ -64,6 +65,7 @@ class DevicesViewModel(
         MutableLiveData(ArrayList())
 
     var connectStatus: MutableLiveData<Int> = MutableLiveData(BluetoothAdapter.STATE_DISCONNECTED)
+    var dataStatus: MutableLiveData<DATA_STATUS> = MutableLiveData(DATA_STATUS.NO_DEVICE)
 
     var resultValue: MutableLiveData<BaseData> = MutableLiveData()
 
@@ -258,6 +260,20 @@ class DevicesViewModel(
         }
     }
 
+    fun uploadEcg(filePath: String): NetworkBean<String>? {
+        val file = File(filePath)
+        if(!file.exists()){
+            loge("uploadEcg error, file not exit")
+            return null
+        }
+        val map = HashMap<String, Any>()
+        map["token"] = TokenRefreshUtil.getInstance().token
+        map["lead"] = 1
+        map["base"] = 1
+        map["file"] = file
+        return NetWortUtil.postMulti("/ecg/uploadEcg", map)
+    }
+
     private var location: Location? = null
     private val locationListener by lazy {
         object :
@@ -285,13 +301,13 @@ class DevicesViewModel(
 
     @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
     private fun onResume() {
-        Log.e(TAG, "on resume ")
-        locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            10000,
-            100F,
-            locationListener
-        )
+//        Log.e(TAG, "on resume ")
+//        locationManager.requestLocationUpdates(
+//            LocationManager.GPS_PROVIDER,
+//            10000,
+//            100F,
+//            locationListener
+//        )
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
@@ -306,6 +322,12 @@ class DevicesViewModel(
     fun onDestroy(activity: Activity?) {
         Log.e(TAG, "on destroy")
         bluetooth?.destroy(activity)
+    }
+
+    enum class DATA_STATUS{
+        NO_DEVICE,
+        DATA,
+        PAUSE
     }
 
 }
