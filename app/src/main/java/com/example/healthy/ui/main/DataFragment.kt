@@ -57,6 +57,8 @@ class DataFragment : Fragment() {
                 DevicesViewModel.DATA_STATUS.DATA -> {
                     binding.controlDevice.setText(R.string.stop_device)
                 }
+
+                else -> {}
             }
         }
 

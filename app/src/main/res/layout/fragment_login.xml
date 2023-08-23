@@ -111,7 +111,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@color/colorAccent"
-        style="@style/Widget.MaterialComponents.Button.TextButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:text="@string/sms_login"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"

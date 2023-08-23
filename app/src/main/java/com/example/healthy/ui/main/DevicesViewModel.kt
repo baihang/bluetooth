@@ -278,8 +278,8 @@ class DevicesViewModel(
     private val locationListener by lazy {
         object :
             LocationListener {
-            override fun onLocationChanged(l: Location?) {
-                Log.e(TAG, "onLocationChanged :${l?.toString()}")
+            override fun onLocationChanged(l: Location) {
+                Log.e(TAG, "onLocationChanged :${l.toString()}")
                 location = l
             }
 
@@ -287,11 +287,11 @@ class DevicesViewModel(
 
             }
 
-            override fun onProviderEnabled(provider: String?) {
+            override fun onProviderEnabled(provider: String) {
 
             }
 
-            override fun onProviderDisabled(provider: String?) {
+            override fun onProviderDisabled(provider: String) {
             }
 
         }
