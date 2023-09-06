@@ -80,6 +80,7 @@ public class TokenRefreshUtil {
 
     public static String getUserId(Context context){
         UserSetting userSetting = SharedPreferenceUtil.Companion.getUserSetting(context, "");
+        Log.e("TokenRefreshUtil", "getUserId: " + userSetting.toString() );
         return userSetting.userId;
     }
 }

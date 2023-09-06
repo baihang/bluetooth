@@ -10,4 +10,16 @@ public class UserSetting {
     public Long tokenTime;
     public String apiServer;
 
+    @Override
+    public String toString() {
+        return "UserSetting{" +
+                "userName='" + userName + '\'' +
+                ", vk='" + vk + '\'' +
+                ", token='" + token + '\'' +
+                ", pk='" + pk + '\'' +
+                ", userId='" + userId + '\'' +
+                ", tokenTime=" + tokenTime +
+                ", apiServer='" + apiServer + '\'' +
+                '}';
+    }
 }

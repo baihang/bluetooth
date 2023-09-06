@@ -72,7 +72,7 @@ object VirtualBluetooth : AbstractBluetooth() {
     }
 
     private fun getVirtualData(data: BaseData): ByteArray {
-        Log.e(TAG, "getVirtualData " + data.label)
+        Log.i(TAG, "getVirtualData " + data.label)
         val result = ByteArray(data.headData.size + data.bodyData.size + data.trialData.size)
         for (i in result.indices) {
             if (i < data.headData.size) {

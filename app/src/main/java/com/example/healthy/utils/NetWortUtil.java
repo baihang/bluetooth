@@ -86,10 +86,10 @@ public class NetWortUtil {
                 .headers(getHeaders())
                 .post(body)
                 .build();
-        Log.e("tag", "body = " + body);
+
         try {
             Response response = client.newCall(request).execute();
-            Log.e("network", "post response = " + response);
+            Log.e("network", "post response = " + response + " data = " + response.body());
             return new NetworkBean<>(response);
         } catch (Exception e) {
             e.printStackTrace();

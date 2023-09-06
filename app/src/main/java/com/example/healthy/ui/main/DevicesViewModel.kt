@@ -29,8 +29,11 @@ import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.bean.NetworkBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
+import com.example.healthy.db.AbstractAppDataBase
+import com.example.healthy.db.dao.HistoryFileDao
 import com.example.healthy.utils.*
 import java.io.File
+import java.io.FileOutputStream
 import java.lang.StringBuilder
 import java.util.concurrent.LinkedBlockingQueue
 
@@ -49,7 +52,7 @@ class DevicesViewModel(
      * false normal
      */
     private var bleOrNormal = true
-    private val DEBUG = true
+    private val DEBUG = false
     private val isUploadData = true
     private var bluetooth: AbstractBluetooth? = null
 
@@ -76,6 +79,10 @@ class DevicesViewModel(
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
 
+    val fileDao :HistoryFileDao by lazy {
+        AbstractAppDataBase.getInstance(application).historyDao()
+    }
+
     private fun initManager() {
         bluetooth = if (bleOrNormal) {
             BleBluetooth
@@ -96,6 +103,9 @@ class DevicesViewModel(
 
             override fun onDeviceStatusChange(status: Int) {
                 connectStatus.postValue(status)
+                if (status == AbstractBluetooth.STATUS_CONNECTED_SUCCESS) {
+                    dataStatus.postValue(DATA_STATUS.DATA)
+                }
             }
 
             override fun onDataReceive(bytes: ByteArray, len: Int) {
@@ -123,7 +133,8 @@ class DevicesViewModel(
     }
 
     private var i = 1
-    private val stringBuilder = StringBuilder()
+
+    //    private val stringBuilder = StringBuilder()
     fun deviceChange(activity: Activity?) {
         bluetooth?.destroy(activity)
         bleOrNormal = !bleOrNormal
@@ -147,11 +158,13 @@ class DevicesViewModel(
             timeStamps.size < 10 -> {
                 timeStamps.add(result.timeStamp)
             }
+
             timeStamps.size == 10 -> {
                 timeStamps.removeAt(0)
                 timeStamps.add(result.timeStamp)
                 timeStampLive.postValue(timeStamps[9] - timeStamps[0])
             }
+
             else -> {
                 timeStamps.clear()
             }
@@ -198,19 +211,29 @@ class DevicesViewModel(
     }
 
     private fun receivedData(bytes: ByteArray) {
+        if (pause) return
         val result = dataAnalyzer.parseData(bytes)
-        if (result != null) {
-            resultValue.postValue(result!!)
-            dataQueue.add(result.clone())
+        result?.let {
+            resultValue.postValue(it)
+            dataQueue.add(it.clone())
+            fileOutputStream?.apply {
+                if (!closeOutput) {
+                    write(it.getDataString().toByteArray())
+                } else {
+                    closeFileOutStream()
+                }
+            }
             when {
                 timeStamps.size < 10 -> {
-                    timeStamps.add(result.timeStamp)
+                    timeStamps.add(it.timeStamp)
                 }
+
                 timeStamps.size == 10 -> {
                     timeStamps.removeAt(0)
-                    timeStamps.add(result.timeStamp)
+                    timeStamps.add(it.timeStamp)
                     timeStampLive.postValue(timeStamps[9] - timeStamps[0])
                 }
+
                 else -> {
                     timeStamps.clear()
                 }
@@ -254,24 +277,69 @@ class DevicesViewModel(
         }
     }
 
-    private fun uploadLocation(){
-        if(location != null){
+    private fun uploadLocation() {
+        if (location != null) {
 
         }
     }
 
-    fun uploadEcg(filePath: String): NetworkBean<String>? {
-        val file = File(filePath)
-        if(!file.exists()){
-            loge("uploadEcg error, file not exit")
-            return null
+    val stringBuilder = StringBuilder()
+    var filePath: String? = null
+    private var outPutStream: FileOutputStream? = null
+    fun saveToFile(context: Context?): String? {
+        context ?: return null
+        Log.e(TAG, "save to file")
+        var value = ""
+        synchronized(stringBuilder) {
+            value = stringBuilder.toString()
+            stringBuilder.clear()
         }
-        val map = HashMap<String, Any>()
-        map["token"] = TokenRefreshUtil.getInstance().token
-        map["lead"] = 1
-        map["base"] = 1
-        map["file"] = file
-        return NetWortUtil.postMulti("/ecg/uploadEcg", map)
+//        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
+        val result = "$value "
+        if (outPutStream == null) {
+            val file =
+                LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
+            filePath = file?.absolutePath
+            Log.e(TAG, "open file = ${file?.absolutePath}")
+            outPutStream = FileOutputStream(file)
+        }
+        outPutStream?.write(result.toByteArray())
+        outPutStream?.flush()
+        return filePath
+    }
+
+    var fileOutputStream: FileOutputStream? = null
+    fun openFileOutStream(context: Context?): String? {
+        closeOutput = false
+
+        val file =
+            LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
+        file?.let {
+            val path = it.absolutePath
+            Log.e(TAG, "open file = ${it.absolutePath}")
+            kotlin.runCatching {
+                fileOutputStream = FileOutputStream(it)
+                return path
+            }
+        }
+
+        return null
+    }
+
+    var closeOutput = false
+    fun closeFileOutStream(){
+        fileOutputStream?.close()
+        fileOutputStream = null
+    }
+
+    fun closeFile() {
+        outPutStream?.close()
+        outPutStream = null
+        stringBuilder.clear()
+    }
+
+    fun uploadEcg(filePath: String): NetworkBean<String>? {
+        return null
     }
 
     private var location: Location? = null
@@ -324,7 +392,14 @@ class DevicesViewModel(
         bluetooth?.destroy(activity)
     }
 
-    enum class DATA_STATUS{
+    fun dataPause(pause: Boolean) {
+        this.pause = pause
+        dataStatus.postValue(if (pause) DATA_STATUS.PAUSE else DATA_STATUS.DATA)
+    }
+
+    private var pause = false
+
+    enum class DATA_STATUS {
         NO_DEVICE,
         DATA,
         PAUSE

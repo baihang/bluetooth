@@ -20,12 +20,16 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import com.example.healthy.bean.HistoryFile
+import com.example.healthy.bean.Status
 import com.example.healthy.bean.UserSetting
 import com.example.healthy.databinding.FragmentLoginSmsBinding
+import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.ui.main.SettingViewModel
 import com.example.healthy.utils.JsonUtil
 import com.example.healthy.utils.NetWortUtil
 import com.example.healthy.utils.SharedPreferenceUtil
+import com.example.healthy.utils.loge
 import com.google.android.material.snackbar.Snackbar
 
 class LoginBySmsFragment : Fragment() {
@@ -119,8 +123,15 @@ class LoginBySmsFragment : Fragment() {
             editor?.putString(SharedPreferenceUtil.CURRENT_USER, viewModel.userName)
             editor?.apply()
 
-            findNavController().navigate(R.id.MainFragment)
+            findNavController().navigate(R.id.DataFragment)
         })
+
+        viewModel.loginResult.observe(viewLifecycleOwner,
+            Observer { loginResult ->
+                loginResult ?: return@Observer
+                if(loginResult.error.isNullOrEmpty()) return@Observer
+                binding?.root?.let { Snackbar.make(it, loginResult.error.toString(),Snackbar.LENGTH_LONG).show() }
+            })
     }
 
     private fun refreshButton(mobile: String?, code: String?) {

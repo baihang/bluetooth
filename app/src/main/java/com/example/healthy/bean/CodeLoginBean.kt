@@ -6,6 +6,6 @@ data class CodeLoginBean(
     val msg: String,
     val name: String,
     val sex: String,
-    val state: String,
+    val state: Int,
     val token: String
 )

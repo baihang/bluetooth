@@ -17,12 +17,15 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.example.healthy.R
+import com.example.healthy.bean.HistoryFile
+import com.example.healthy.bean.Status
 import com.example.healthy.chart.MyLineChart
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.HeartSixData
 import com.example.healthy.data.HeartThreeData
 import com.example.healthy.data.TemperatureData
 import com.example.healthy.databinding.MainFragmentBinding
+import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.utils.LocalFileUtil
 import com.example.healthy.utils.NoticePopWindow
 import com.example.healthy.utils.SharedPreferenceUtil
@@ -62,14 +65,15 @@ class MainFragment() : Fragment() {
         initLineChart()
 
         binding?.mainSetting?.setOnClickListener {
+
 //            findNavController().navigate(R.id.SettingFragment)
-            CoroutineScope(Dispatchers.IO).launch {
-                runBlocking {
-                    val result =
-                        viewModel.uploadEcg("/storage/emulated/0/Android/data/com.example.healthy/files/heart/20230719172459-89-original")
-                    loge("result = $result")
-                }
-            }
+//            CoroutineScope(Dispatchers.IO).launch {
+//                runBlocking {
+//                    val result =
+//                        viewModel.uploadEcg("/storage/emulated/0/Android/data/com.example.healthy/files/heart/20230719172459-89-original")
+//                    loge("result = $result")
+//                }
+//            }
 //            anima()
             //测试跳转 Hook
 //            ActivityHook.replaceInstrumentation(activity)
@@ -103,7 +107,7 @@ class MainFragment() : Fragment() {
         }
 
         binding?.mainSaveTimeTv?.setOnClickListener {
-            val patch = filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
+            val patch = viewModel.filePath ?: "/storage/emulated/0/Android/data/com.example.healthy/files"
             val file = File(patch)
             if (!file.exists()) {
                 return@setOnClickListener
@@ -135,10 +139,8 @@ class MainFragment() : Fragment() {
                 binding?.mainSaveBt?.setText("开始保存")
                 timeInterval = -1
                 ThreadUtil.getInstance()?.removeTimeListener(timeListener)
-                saveToFile()
-                outPutStream?.close()
-                outPutStream = null
-                stringBuilder.clear()
+                val filePath = viewModel.saveToFile(context)
+                viewModel.closeFile()
 
                 Snackbar.make(binding!!.mainSaveBt, filePath ?: "", Snackbar.LENGTH_LONG)
                     .setAction("复制", View.OnClickListener {
@@ -209,33 +211,11 @@ class MainFragment() : Fragment() {
             timeInterval++
             if (timeInterval >= 10) {
                 timeInterval = 0
-                saveToFile()
+                viewModel.saveToFile(context)
             }
         }
     }
 
-    private val stringBuilder = StringBuilder()
-    private var filePath: String? = null
-    private var outPutStream: FileOutputStream? = null
-    private fun saveToFile() {
-        Log.e(TAG, "save to file")
-        var value = ""
-        synchronized(stringBuilder) {
-            value = stringBuilder.toString()
-            stringBuilder.clear()
-        }
-//        val result = "${LocalFileUtil.getDateStr()}\n$value\n"
-        val result = "$value "
-        if (outPutStream == null) {
-            val file =
-                LocalFileUtil.createFile(context, "heart", "${LocalFileUtil.getDateStr()}.txt")
-            filePath = file?.absolutePath
-            Log.e(TAG, "open file = ${file?.absolutePath}")
-            outPutStream = FileOutputStream(file)
-        }
-        outPutStream?.write(result.toByteArray())
-        outPutStream?.flush()
-    }
 
     override fun onDetach() {
         super.onDetach()
@@ -249,9 +229,7 @@ class MainFragment() : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (outPutStream != null) {
-            outPutStream?.close()
-        }
+        viewModel.closeFile()
         ThreadUtil.getInstance()?.removeTimeListener(timeListener)
         binding = null
     }
@@ -270,9 +248,9 @@ class MainFragment() : Fragment() {
                 binding?.lineChart3?.addEntry(dataArray[2][i])
 
                 if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
-                    stringBuilder.append(dataArray[1][i]).append(" ")
-                    stringBuilder.append(dataArray[2][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[0][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[1][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[2][i]).append(" ")
                 }
             }
         } else if (dataArray.size == 6) {
@@ -294,12 +272,12 @@ class MainFragment() : Fragment() {
                 binding?.lineChart5?.addEntry(dataArray[4][i])
                 binding?.lineChart6?.addEntry(dataArray[5][i])
                 if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
-                    stringBuilder.append(dataArray[1][i]).append(" ")
-                    stringBuilder.append(dataArray[2][i]).append(" ")
-                    stringBuilder.append(dataArray[3][i]).append(" ")
-                    stringBuilder.append(dataArray[4][i]).append(" ")
-                    stringBuilder.append(dataArray[5][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[0][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[1][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[2][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[3][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[4][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[5][i]).append(" ")
                 }
             }
         } else if (dataArray.size == 2) {
@@ -312,7 +290,7 @@ class MainFragment() : Fragment() {
                 binding?.lineChart2?.addEntry(dataArray[1][i])
                 binding?.lineChart2?.visibility = View.VISIBLE
                 if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[0][i]).append(" ")
 //                    stringBuilder.append(dataArray[1][i]).append(" ")
                 }
             }
@@ -325,7 +303,7 @@ class MainFragment() : Fragment() {
             for (i in dataArray[0].indices) {
                 binding?.lineChart1?.addEntry(dataArray[0][i])
                 if (timeInterval != -1) {
-                    stringBuilder.append(dataArray[0][i]).append(" ")
+                    viewModel.stringBuilder.append(dataArray[0][i]).append(" ")
                 }
             }
         }

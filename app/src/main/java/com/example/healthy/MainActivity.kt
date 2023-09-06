@@ -58,6 +58,10 @@ class MainActivity : AppCompatActivity() {
 //        startActivity(intent)
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+    }
+
     override fun onStart() {
         super.onStart()
 

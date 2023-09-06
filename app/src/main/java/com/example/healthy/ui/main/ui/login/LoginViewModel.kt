@@ -132,11 +132,18 @@ class LoginViewModel(private val loginRepository: LoginRepository) : ViewModel()
     private fun smsLoginSuccess(result: String) {
         val bean = JsonUtil.jsonStr2Object(result, CodeLoginBean::class.java)
         Log.e("smsLoginSuccess", "bean = $bean")
-        loginStatus.postValue(bean)
-        _loginResult.value = LoginResult(
-            success = LoggedInUserView(displayName = bean?.name ?: "未命名")
-        )
-        RxManagerUtil.getInstance().load(utilManagerListener, TYPE_REFRESH_TOKEN)
+        if(bean.state == 0){
+            loginStatus.postValue(bean)
+            _loginResult.value = LoginResult(
+                success = LoggedInUserView(displayName = bean?.name ?: "未命名")
+            )
+            RxManagerUtil.getInstance().load(utilManagerListener, TYPE_REFRESH_TOKEN)
+        }else{
+            _loginResult.value = LoginResult(
+                error = bean.msg
+            )
+        }
+
     }
 
     private fun smsLogin(userName: String, smsCode: String, vk: String): NetworkBean<String> {

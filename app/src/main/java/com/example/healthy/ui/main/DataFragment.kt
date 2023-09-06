@@ -1,23 +1,46 @@
 package com.example.healthy.ui.main
 
 import android.bluetooth.BluetoothAdapter
+import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Adapter
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import androidx.recyclerview.widget.SnapHelper
 import com.example.healthy.R
+import com.example.healthy.bean.HistoryFile
+import com.example.healthy.bean.NetworkBean
+import com.example.healthy.bean.Status
+import com.example.healthy.bean.UploadFileResult
 import com.example.healthy.chart.MyLineChart
 import com.example.healthy.data.BaseData
 import com.example.healthy.databinding.FragmentDataBinding
+import com.example.healthy.db.AbstractAppDataBase
+import com.example.healthy.db.dao.HistoryFileDao
+import com.example.healthy.utils.JsonUtil
+import com.example.healthy.utils.NetWortUtil
 import com.example.healthy.utils.SharedPreferenceUtil
 import com.example.healthy.utils.TokenRefreshUtil
+import com.example.healthy.utils.loge
+import com.example.healthy.utils.singleClick
+import com.google.android.material.carousel.CarouselLayoutManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.io.File
+import kotlin.coroutines.CoroutineContext
 
 class DataFragment : Fragment() {
 
@@ -44,13 +67,18 @@ class DataFragment : Fragment() {
         val sp = SharedPreferenceUtil.getSharedPreference(context)
         val xMax =
             sp?.getInt(SettingViewModel.X_MAX, MyLineChart.MAX_X_LENGTH) ?: MyLineChart.MAX_X_LENGTH
-        binding.lineChart.initDataSet("心电 #1", Color.RED, xMax)
+        binding.lineChart.initDataSet(
+            "心电 #1",
+            context?.let { getColor(it, R.color.md_theme_light_tertiary) } ?: Color.RED,
+            xMax
+        )
 
-        binding.userId.text = resources.getString(R.string.user_id, TokenRefreshUtil.getUserId(context))
+        binding.userId.text =
+            resources.getString(R.string.user_id, TokenRefreshUtil.getUserId(context))
 
         viewModel.dataStatus.observe(viewLifecycleOwner) { status ->
             when (status) {
-                DevicesViewModel.DATA_STATUS.NO_DEVICE -> {
+                DevicesViewModel.DATA_STATUS.PAUSE -> {
                     binding.controlDevice.setText(R.string.go_on_device)
                 }
 
@@ -58,55 +86,170 @@ class DataFragment : Fragment() {
                     binding.controlDevice.setText(R.string.stop_device)
                 }
 
-                else -> {}
+                else -> {
+                    binding.controlDevice.setText(R.string.to_link_device)
+                }
             }
         }
 
-        viewModel.resultValue.observe(viewLifecycleOwner){data ->
+        viewModel.resultValue.observe(viewLifecycleOwner) { data ->
             showData(data)
         }
+
+        adapter.initData(viewModel.fileDao)
     }
 
     private fun initView() {
         binding.apply {
             controlDevice.setOnClickListener {
-                if (viewModel.connectStatus.value != BluetoothAdapter.STATE_CONNECTED) {
-                    findNavController().navigate(R.id.DevicesFragment)
+                when (viewModel.dataStatus.value) {
+                    DevicesViewModel.DATA_STATUS.NO_DEVICE -> {
+                        findNavController().navigate(R.id.DevicesFragment)
+
+                    }
+
+                    DevicesViewModel.DATA_STATUS.DATA -> {
+                        viewModel.dataPause(true)
+                    }
+
+                    DevicesViewModel.DATA_STATUS.PAUSE -> {
+                        viewModel.dataPause(false)
+                    }
+
+                    else -> {}
                 }
             }
+
+            save.setOnClickListener { view ->
+                if (viewModel.fileOutputStream == null) {
+                    val filePath = viewModel.openFileOutStream(context)
+                    if (filePath.isNullOrEmpty()) return@setOnClickListener
+                    val item = HistoryFile(filePath = filePath, status = Status.SAVING)
+                    adapter.updateList.add(0, item)
+                    viewModel.fileDao.insert(item)
+                    adapter.notifyItemInserted(0)
+                    save.imageTintList =
+                        ColorStateList.valueOf(getColor(save.context, R.color.colorAccent))
+                } else {
+                    viewModel.closeOutput = true
+                    adapter.updateList.last().let { item ->
+                        if (item.status == Status.SAVING) {
+                            item.status = Status.SAVED
+                            item.upload {
+                                viewModel.fileDao.update(item)
+                                view.post { adapter.notifyItemChanged(adapter.updateList.size - 1) }
+                            }
+                        }
+                    }
+                    save.imageTintList = null
+                }
+            }
+
             fileList.layoutManager = LinearLayoutManager(context)
-            fileList.adapter = HistoryAdapter()
+            fileList.adapter = adapter
+
+            chatList.layoutManager = CarouselLayoutManager()
+            chatList.adapter = LineAdapter()
         }
     }
 
-    private fun showData(data: BaseData){
-        for (i in data.getData()[0]){
+    private fun showData(data: BaseData) {
+        for (i in data.getData()[0]) {
             binding.lineChart.addEntry(i)
         }
     }
 
-    class HistoryAdapter: Adapter<HistoryViewHolder>(){
+    private val adapter = HistoryAdapter()
+
+    class HistoryAdapter() : Adapter<HistoryViewHolder>() {
+
+        val updateList = ArrayList<HistoryFile>()
+        private var fileDao: HistoryFileDao? = null
+
+        fun initData(dao: HistoryFileDao?) {
+            fileDao = dao
+            updateList.clear()
+            dao?.getAll()?.let { updateList.addAll(it) }
+        }
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryViewHolder {
-            TODO("Not yet implemented")
+            return HistoryViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_upload_file, parent, false)
+            )
         }
 
         override fun getItemCount(): Int {
-            TODO("Not yet implemented")
+            return updateList.size
         }
 
         override fun onBindViewHolder(holder: HistoryViewHolder, position: Int) {
-            TODO("Not yet implemented")
+            val item = updateList[position]
+            holder.id.text = item.id.toString()
+            holder.filePath.text = item.filePath
+            holder.result.text = item.analysedMsg
+
+            holder.upload.singleClick {
+                item.upload {
+                    loge("item id = ${item.id} $item")
+                    fileDao?.update(item)
+                    holder.upload.post { notifyItemChanged(position) }
+                }
+            }
+            holder.getResult.singleClick {
+                item.analyzeResult {
+                    fileDao?.update(item)
+                    holder.getResult.post { notifyItemChanged(position) }
+                }
+            }
+            holder.delete.singleClick {
+                fileDao?.delete(item)
+                initData(fileDao)
+                holder.delete.post { notifyDataSetChanged() }
+            }
         }
 
     }
 
-    class HistoryViewHolder(itemView: View) : ViewHolder(itemView){
+    class HistoryViewHolder(itemView: View) : ViewHolder(itemView) {
+        var id: TextView
+        var filePath: TextView
+        var result: TextView
+        var upload: Button
+        var getResult: Button
+        var delete: Button
+
+        init {
+            id = itemView.findViewById(R.id.remote_id)
+            filePath = itemView.findViewById(R.id.file_patch)
+            result = itemView.findViewById(R.id.result)
+
+            upload = itemView.findViewById(R.id.upload)
+            getResult = itemView.findViewById(R.id.get_result)
+            delete = itemView.findViewById(R.id.delete)
+        }
+    }
+
+    class LineAdapter : Adapter<LineViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LineViewHolder {
+            return LineViewHolder(
+                LayoutInflater.from(parent.context)
+                    .inflate(R.layout.item_chat_layout, parent, false)
+            )
+        }
+
+        override fun getItemCount(): Int {
+            return 4
+        }
+
+        override fun onBindViewHolder(holder: LineViewHolder, position: Int) {
+        }
 
     }
 
-    data class HistoryFile(
-        val id: Int,
+    class LineViewHolder(itemView: View) : ViewHolder(itemView) {
 
-    )
+    }
+
 
 }
