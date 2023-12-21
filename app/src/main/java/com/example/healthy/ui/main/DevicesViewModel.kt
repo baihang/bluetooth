@@ -9,6 +9,7 @@ import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -19,19 +20,27 @@ import android.util.Log
 import android.widget.Toast
 import androidx.collection.ArraySet
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
 import com.example.healthy.MainActivity
 import com.example.healthy.MyApplication
+import com.example.healthy.R
 import com.example.healthy.bean.AbstractLoadBean
+import com.example.healthy.bean.HistoryFile
 import com.example.healthy.bean.NetworkBean
+import com.example.healthy.bean.Status
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.db.dao.HistoryFileDao
 import com.example.healthy.utils.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.StringBuilder
@@ -132,9 +141,6 @@ class DevicesViewModel(
         ThreadUtil.getInstance()?.addThread(uploadThread)
     }
 
-    private var i = 1
-
-    //    private val stringBuilder = StringBuilder()
     fun deviceChange(activity: Activity?) {
         bluetooth?.destroy(activity)
         bleOrNormal = !bleOrNormal
@@ -147,27 +153,6 @@ class DevicesViewModel(
             is NormalBluetooth -> "普通蓝牙"
             is BleBluetooth -> "BLE蓝牙"
             else -> if (bleOrNormal) "BLE蓝牙" else "普通蓝牙"
-        }
-    }
-
-    /**
-     * 测试时间戳
-     */
-    fun testTime(result: BaseData) {
-        when {
-            timeStamps.size < 10 -> {
-                timeStamps.add(result.timeStamp)
-            }
-
-            timeStamps.size == 10 -> {
-                timeStamps.removeAt(0)
-                timeStamps.add(result.timeStamp)
-                timeStampLive.postValue(timeStamps[9] - timeStamps[0])
-            }
-
-            else -> {
-                timeStamps.clear()
-            }
         }
     }
 
@@ -219,8 +204,6 @@ class DevicesViewModel(
             fileOutputStream?.apply {
                 if (!closeOutput) {
                     write(it.getDataString().toByteArray())
-                } else {
-                    closeFileOutStream()
                 }
             }
             when {
@@ -326,8 +309,11 @@ class DevicesViewModel(
         return null
     }
 
-    var closeOutput = false
+    @Volatile
+    private var closeOutput = false
+
     fun closeFileOutStream(){
+        closeOutput = true
         fileOutputStream?.close()
         fileOutputStream = null
     }

@@ -120,27 +120,28 @@ class DataFragment : Fragment() {
                 }
             }
 
-            save.setOnClickListener { view ->
+            save.singleClick {
                 if (viewModel.fileOutputStream == null) {
                     val filePath = viewModel.openFileOutStream(context)
-                    if (filePath.isNullOrEmpty()) return@setOnClickListener
+                    if (filePath.isNullOrEmpty()) return@singleClick
                     val item = HistoryFile(filePath = filePath, status = Status.SAVING)
                     adapter.updateList.add(0, item)
                     viewModel.fileDao.insert(item)
                     adapter.notifyItemInserted(0)
+                    fileList.scrollToPosition(0)
                     save.imageTintList =
                         ColorStateList.valueOf(getColor(save.context, R.color.colorAccent))
                 } else {
-                    viewModel.closeOutput = true
-                    adapter.updateList.last().let { item ->
-                        if (item.status == Status.SAVING) {
-                            item.status = Status.SAVED
-                            item.upload {
-                                viewModel.fileDao.update(item)
-                                view.post { adapter.notifyItemChanged(adapter.updateList.size - 1) }
-                            }
-                        }
-                    }
+                    viewModel.closeFileOutStream()
+//                    adapter.updateList.last().let { item ->
+//                        if (item.status == Status.SAVING) {
+//                            item.status = Status.SAVED
+//                            item.upload {
+//                                viewModel.fileDao.update(item)
+//                                save.post { adapter.notifyItemChanged(adapter.updateList.size - 1) }
+//                            }
+//                        }
+//                    }
                     save.imageTintList = null
                 }
             }

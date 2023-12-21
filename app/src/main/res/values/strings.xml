@@ -169,7 +169,7 @@
     <string name="user_id">用户Id:%1$s</string>
     <string name="upload_history">历史记录</string>
     <string name="save">保存</string>
-    <string name="re_upload">重新上传</string>
-    <string name="re_get_result">重新分析</string>
+    <string name="re_upload">上传</string>
+    <string name="re_get_result">分析</string>
     <string name="delete">删除</string>
 </resources>
