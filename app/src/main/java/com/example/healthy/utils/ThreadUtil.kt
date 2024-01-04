@@ -53,6 +53,7 @@ class ThreadUtil private constructor() {
     fun addThread(runnable: Runnable) {
         threadPoolExecutor.remove(runnable)
         threadPoolExecutor.execute(runnable)
+        loge("addThread $runnable size = ${threadPoolExecutor.activeCount}")
     }
 
     fun isAlive():Int{

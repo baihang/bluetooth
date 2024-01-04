@@ -15,6 +15,10 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import com.example.healthy.data.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import okhttp3.internal.wait
 import java.lang.StringBuilder
 import java.util.concurrent.TimeUnit
@@ -37,7 +41,7 @@ object VirtualBluetooth : AbstractBluetooth() {
             Looper.prepare()
 
             handler = @SuppressLint("HandlerLeak")
-            object : Handler() {
+            object : Handler(Looper.myLooper()!!) {
                 override fun handleMessage(msg: Message) {
                     when (msg.what) {
                         MSG_DESTROY -> {
@@ -109,9 +113,16 @@ object VirtualBluetooth : AbstractBluetooth() {
     }
 
     override fun connectDevice(context: Context?, device: BluetoothDevice?) {
-        val msg = handler?.obtainMessage() ?: Message()
-        msg.what = MSG_CONNECT_DEVICE
-        handler?.sendMessageDelayed(msg, 1000)
+        CoroutineScope(Dispatchers.IO).launch {
+            if(handler == null){
+                Log.e(TAG, "connectDevice: handle is null")
+                delay(5000)
+                Log.e(TAG, "connectDevice: handle is $handler")
+            }
+            val msg = handler?.obtainMessage() ?: Message()
+            msg.what = MSG_CONNECT_DEVICE
+            handler?.sendMessageDelayed(msg, 1000)
+        }
     }
 
     fun receiveData(){

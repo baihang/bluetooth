@@ -1,8 +1,10 @@
 package com.example.healthy.ui.main
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.util.Log
@@ -13,6 +15,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -87,6 +90,7 @@ class DevicesFragment : Fragment() {
         if (model.connectStatus.value ?: 0 < AbstractBluetooth.STATUS_CONNECTED_DEVICE) {
             model.scanDevices(true, activity)
         }
+        upFragment = false
     }
 
     override fun onPause() {
@@ -122,9 +126,14 @@ class DevicesFragment : Fragment() {
             findNavController().navigateUp()
         }
 
+        binding.virtualDeviceButton.setOnClickListener {
+            model.openVirtualDevice()
+            upFragment = true
+        }
+
         model.resultValue.observe(viewLifecycleOwner, Observer { baseData ->
             debugInfo("收到数据：${baseData.label}")
-            if(NoticePopWindow.isShow()){
+            if (NoticePopWindow.isShow()) {
                 NoticePopWindow.dismiss()
             }
         })
@@ -169,10 +178,19 @@ class DevicesFragment : Fragment() {
                     debugInfo("成功连接设备")
                     NoticePopWindow.dismiss()
                 }
+
                 AbstractBluetooth.STATUS_ERROR -> {
                     model.onDestroy(activity)
                     debugInfo("连接设备出错")
                 }
+
+                AbstractBluetooth.STATUS_RECEIVE_DATA -> {
+                    if (upFragment) {
+                        upFragment = false
+                        findNavController().navigateUp()
+                    }
+                }
+
                 AbstractBluetooth.STATUS_BLUETOOTH_CLOSE -> {
                     Snackbar.make(binding.devicesLayout, "打开蓝牙", Snackbar.LENGTH_LONG)
                         .setAction("打开", View.OnClickListener {
@@ -189,6 +207,8 @@ class DevicesFragment : Fragment() {
         })
 
     }
+
+    private var upFragment = false
 
     private fun debugInfo(str: String) {
         strBuilder.append(str).append("\n")
@@ -222,7 +242,17 @@ class DevicesFragment : Fragment() {
 
         override fun onBindViewHolder(holder: DevicesViewHolder, position: Int) {
             val device: BluetoothDevice? = deviceArray[position]
-            holder.deviceName?.text = device?.name ?: "蓝牙-未命名"
+            holder.deviceName?.let {
+                if (ActivityCompat.checkSelfPermission(
+                        it.context,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    )
+                    != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return
+                }
+                it.text = device?.name ?: "蓝牙-未命名"
+            }
             holder.deviceMac?.text = device?.address ?: "mac address"
 
             holder.layout?.setOnClickListener {

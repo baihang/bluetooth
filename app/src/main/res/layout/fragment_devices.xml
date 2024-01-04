@@ -58,6 +58,18 @@
                 android:text="去看图像"
                 android:textColor="#DEBC8B" />
 
+            <Button
+                android:id="@+id/virtual_device_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@id/device_data_button"
+                android:layout_marginStart="40dp"
+                android:layout_marginEnd="40dp"
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/device_botton_background"
+                android:text="打开虚拟设备"
+                android:textColor="#DEBC8B" />
+
             <ProgressBar
                 android:id="@+id/progress"
                 android:visibility="gone"

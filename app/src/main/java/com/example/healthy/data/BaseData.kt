@@ -95,7 +95,7 @@ abstract class BaseData : Cloneable {
                 builder.append(d2).append(" ")
             }
         }
-        builder.append("\n")
+//        builder.append("\n")
         return builder.toString()
     }
 

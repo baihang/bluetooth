@@ -172,4 +172,6 @@
     <string name="re_upload">上传</string>
     <string name="re_get_result">分析</string>
     <string name="delete">删除</string>
+    <string name="saving">正在保存。。。</string>
+    <string name="saved">保存完成, 正在上传</string>
 </resources>

@@ -21,7 +21,7 @@ class MyApplication : Application() {
         private const val BUGLY_APP_KEY = "47b80c77-d8f1-4122-a826-a0bc93315457"
 
         @SuppressLint("StaticFieldLeak")
-        private lateinit var globalContext : Context
+        lateinit var globalContext : Context
     }
 
     override fun onCreate() {

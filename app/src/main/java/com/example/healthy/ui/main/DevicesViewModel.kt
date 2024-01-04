@@ -32,6 +32,7 @@ import com.example.healthy.bean.AbstractLoadBean
 import com.example.healthy.bean.HistoryFile
 import com.example.healthy.bean.NetworkBean
 import com.example.healthy.bean.Status
+import com.example.healthy.bean.UploadEcgBean
 import com.example.healthy.data.BaseData
 import com.example.healthy.data.DataAnalyze
 import com.example.healthy.db.AbstractAppDataBase
@@ -52,6 +53,10 @@ class DevicesViewModel(
 
     companion object {
         private const val TAG = "DevicesViewModel"
+
+        @Volatile
+        private var isUploadData = false
+
     }
 
     private var timeStamps: ArrayList<Long> = ArrayList(10)
@@ -61,8 +66,6 @@ class DevicesViewModel(
      * false normal
      */
     private var bleOrNormal = true
-    private val DEBUG = false
-    private val isUploadData = true
     private var bluetooth: AbstractBluetooth? = null
 
     private var value: Int = 0
@@ -88,7 +91,7 @@ class DevicesViewModel(
     var timeStampLive: MutableLiveData<Long> = MutableLiveData()
     private var timeStampCount = 0L
 
-    val fileDao :HistoryFileDao by lazy {
+    val fileDao: HistoryFileDao by lazy {
         AbstractAppDataBase.getInstance(application).historyDao()
     }
 
@@ -97,9 +100,6 @@ class DevicesViewModel(
             BleBluetooth
         } else {
             NormalBluetooth
-        }
-        if (DEBUG) {
-            bluetooth = VirtualBluetooth
         }
         bluetooth?.baseInit(getApplication())
         AbstractBluetooth.listener = object : AbstractBluetooth.BluetoothListener {
@@ -119,7 +119,7 @@ class DevicesViewModel(
 
             override fun onDataReceive(bytes: ByteArray, len: Int) {
                 receivedData(bytes.copyOfRange(0, len))
-                connectStatus.postValue(len)
+                connectStatus.postValue(AbstractBluetooth.STATUS_RECEIVE_DATA)
             }
 
             override fun onServiceFound(services: List<BluetoothGattService>?) {
@@ -137,8 +137,10 @@ class DevicesViewModel(
             }
 
         }
-
-        ThreadUtil.getInstance()?.addThread(uploadThread)
+        if (!isUploadData) {
+            isUploadData = true
+            ThreadUtil.getInstance()?.addThread(uploadThread)
+        }
     }
 
     fun deviceChange(activity: Activity?) {
@@ -153,6 +155,15 @@ class DevicesViewModel(
             is NormalBluetooth -> "普通蓝牙"
             is BleBluetooth -> "BLE蓝牙"
             else -> if (bleOrNormal) "BLE蓝牙" else "普通蓝牙"
+        }
+    }
+
+    fun openVirtualDevice() {
+        initManager()
+        VirtualBluetooth.let {
+            it.baseInit(getApplication())
+            it.scanDevice(null)
+            it.connectDevice(null, null)
         }
     }
 
@@ -229,8 +240,8 @@ class DevicesViewModel(
     private val uploadThread = Runnable {
         kotlin.run {
             while (isUploadData) {
-                val data = dataQueue.take();
-                Thread.sleep(10 * 1000)
+                val data = dataQueue.take()
+                Thread.sleep(1000)
                 strBuilder.clear()
                 strBuilder.append(data.getUploadLabel())
                 strBuilder.append("\n")
@@ -241,24 +252,52 @@ class DevicesViewModel(
                 strBuilder.append(data.getBodyData())
                 val dates = dataQueue.toArray()
                 dataQueue.clear()
-                var count = 1
                 for (d in dates) {
                     strBuilder.append((d as BaseData).getBodyData())
-                    count++
-                    if (count >= 200 && dates.size > 200) {
-                        strBuilder.append(d.timeStamp).append("\n")
-                        count = 0
-                    }
                 }
-                if (dates.isEmpty()) {
-                    strBuilder.append(data.timeStamp)
-                } else {
-                    strBuilder.append((dates[dates.size - 1] as BaseData).timeStamp)
-                }
-                NetWortUtil.upEcgData(title + strBuilder.toString())
+                uploadEcgMinute(strBuilder.toString())
+//                NetWortUtil.upEcgData(strBuilder.toString())
             }
         }
     }
+
+    private val ecgMinuteList = ArrayList<String>()
+    private fun uploadEcgMinute(data: String) {
+        ecgMinuteList.add(data)
+        if (ecgMinuteList.size < 10) {
+            return
+        }
+        loge("ecgMinuteList size = ${ecgMinuteList.size}")
+        val file =
+            LocalFileUtil.createFile(MyApplication.globalContext, "heart", "temp$tempIndex.txt")
+        tempIndex++
+        if (tempIndex > 10) {
+            tempIndex = 0
+        }
+        file?.let {
+            it.createNewFile()
+            val outputStream = file.outputStream()
+            for (str in ecgMinuteList) {
+                outputStream.write(str.toByteArray())
+            }
+            val map = HashMap<String, Any>()
+            map["data"] = file
+            CoroutineScope(Dispatchers.IO).launch {
+                val result = NetWortUtil.postMulti("http://www.vipmember.com.cn:8080/getChannel", map)
+                loge("result = $result")
+                if(result.isSucceed && result.data.isNotEmpty()){
+                    val res = result.data.replace("\\", "")
+                    val bean = JsonUtil.jsonStr2Object(res.substring(1, res.length - 1), UploadEcgBean::class.java)
+                    uploadNetResult.postValue("通道：${bean.channel} 心率：${bean.heartRate} 分析：${bean.result}")
+                }else{
+                    uploadNetResult.postValue("请求错误：${result.data}")
+                }
+            }
+        }
+        ecgMinuteList.clear()
+    }
+    val uploadNetResult: MutableLiveData<String> = MutableLiveData("")
+    private var tempIndex = 0
 
     private fun uploadLocation() {
         if (location != null) {
@@ -312,7 +351,7 @@ class DevicesViewModel(
     @Volatile
     private var closeOutput = false
 
-    fun closeFileOutStream(){
+    fun closeFileOutStream() {
         closeOutput = true
         fileOutputStream?.close()
         fileOutputStream = null

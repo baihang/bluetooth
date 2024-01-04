@@ -43,7 +43,8 @@ public class NetWortUtil {
 
     private static volatile boolean tokenGetting = false;
 
-    public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn:81";
+    public static final String DEFAULT_BASE_URL = "https://www.vipmember.com.cn";
+//    public static final String DEFAULT_BASE_URL = "http://www.vipmember.com.cn:80";
 
     public static final String BASE_URL_KER = "https://api.yurui1021.com";
 
@@ -65,6 +66,9 @@ public class NetWortUtil {
     }
 
     private static String getFullUrl(String url) {
+        if(url.contains("http")){
+            return url;
+        }
         return base_url + url;
     }
 
@@ -89,7 +93,7 @@ public class NetWortUtil {
 
         try {
             Response response = client.newCall(request).execute();
-            Log.e("network", "post response = " + response + " data = " + response.body());
+            Log.e("network", "url " + url + " post response = " + response + " data = " + response.body());
             return new NetworkBean<>(response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -122,14 +126,17 @@ public class NetWortUtil {
 
     public static NetworkBean<String> postMulti(String url, Map<String, Object> params) {
         MultipartBody.Builder builder = new MultipartBody.Builder().setType(MultipartBody.FORM);
+        if(!params.containsKey("token")){
+            params.put("token", TokenRefreshUtil.getInstance().getToken());
+        }
         for (String item : params.keySet()) {
             Object value = params.get(item);
             if (value instanceof File) {
-                Log.e(TAG, "postMulti: File " + ((File) value).getName());
+                Log.e(TAG, "postMulti: File " + ((File) value).getAbsolutePath() + " file size = " + ((File)value).length());
                 builder.addFormDataPart(item, ((File) value).getName(),
                         RequestBody.create((File) value, MediaType.parse("text/plain")));
             } else if (value != null) {
-                Log.e(TAG, "postMulti: String " + value.toString());
+                Log.e(TAG, "postMulti: "+ item + " - " + value.toString());
                 builder.addFormDataPart(item, value.toString());
             }
         }

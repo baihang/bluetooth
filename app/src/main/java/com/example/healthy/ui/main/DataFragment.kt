@@ -96,6 +96,10 @@ class DataFragment : Fragment() {
             showData(data)
         }
 
+        viewModel.uploadNetResult.observe(viewLifecycleOwner){result ->
+            binding.networkStatus.text = result
+        }
+
         adapter.initData(viewModel.fileDao)
     }
 
@@ -124,6 +128,7 @@ class DataFragment : Fragment() {
                 if (viewModel.fileOutputStream == null) {
                     val filePath = viewModel.openFileOutStream(context)
                     if (filePath.isNullOrEmpty()) return@singleClick
+                    saveTips.setText(R.string.saving)
                     val item = HistoryFile(filePath = filePath, status = Status.SAVING)
                     adapter.updateList.add(0, item)
                     viewModel.fileDao.insert(item)
@@ -132,6 +137,8 @@ class DataFragment : Fragment() {
                     save.imageTintList =
                         ColorStateList.valueOf(getColor(save.context, R.color.colorAccent))
                 } else {
+                    saveTips.setText(R.string.saved)
+                    saveTips.postDelayed({ saveTips.text = "" }, 5000)
                     viewModel.closeFileOutStream()
 //                    adapter.updateList.last().let { item ->
 //                        if (item.status == Status.SAVING) {

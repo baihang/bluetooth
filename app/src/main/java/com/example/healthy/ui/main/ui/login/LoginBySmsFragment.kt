@@ -64,6 +64,7 @@ class LoginBySmsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         binding?.smsGet?.setOnClickListener {
             viewModel.postGetSms(binding?.mobileEt?.text.toString())
+            binding?.smsEt?.setText("1357")
         }
 
         binding?.smsEt?.addTextChangedListener { text ->
