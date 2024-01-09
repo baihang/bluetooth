@@ -12,6 +12,8 @@ import com.example.healthy.db.AbstractAppDataBase
 import com.example.healthy.utils.LogUtil
 import com.example.healthy.utils.ThreadUtil
 import com.example.healthy.utils.TokenRefreshUtil
+import com.tencent.bugly.crashreport.CrashReport
+
 //import com.tencent.bugly.Bugly
 
 class MyApplication : Application() {
@@ -37,7 +39,7 @@ class MyApplication : Application() {
         AbstractAppDataBase.getInstance(applicationContext)
         TokenRefreshUtil.getInstance(applicationContext)
         LogUtil.getInstance(applicationContext)
-//        Bugly.init(applicationContext, BUGLY_APP_ID, true)
+        CrashReport.initCrashReport(applicationContext, BUGLY_APP_ID, true)
     }
 
 }

@@ -10,6 +10,7 @@ import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
@@ -33,7 +34,13 @@ class MainActivity : AppCompatActivity() {
     private val permissions = arrayOf(
         Manifest.permission.ACCESS_FINE_LOCATION,
         Manifest.permission.READ_EXTERNAL_STORAGE,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        if (Build.VERSION.SDK_INT >= 31) {
+            Manifest.permission.BLUETOOTH_CONNECT
+        } else "",
+        if (Build.VERSION.SDK_INT >= 31) {
+            Manifest.permission.BLUETOOTH_SCAN
+        } else "",
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +56,7 @@ class MainActivity : AppCompatActivity() {
 
         if (shared?.getBoolean("isLogin", false) == false) {
             findNavController(R.id.nav_host_fragment).navigate(R.id.LoginBySmsFragment)
-        }else{
+        } else {
             findNavController(R.id.nav_host_fragment).navigate(R.id.DataFragment)
         }
 
@@ -58,9 +65,6 @@ class MainActivity : AppCompatActivity() {
 //        startActivity(intent)
     }
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-    }
 
     override fun onStart() {
         super.onStart()
@@ -75,24 +79,31 @@ class MainActivity : AppCompatActivity() {
     override fun attachBaseContext(newBase: Context?) {
         super.attachBaseContext(newBase)
 
-        ActivityHook.replaceFullIns()
+//        ActivityHook.replaceFullIns()
 //        ActivityHook.replaceInstrumentation(this)
     }
 
+    private val deniedPermission: ArrayList<String> = ArrayList()
+
     private fun checkPermission() {
-        for (permission in permissions){
-            if (ContextCompat.checkSelfPermission(this, permission)
+        deniedPermission.clear()
+        for (permission in permissions) {
+            if (permission.isNotEmpty() && ContextCompat.checkSelfPermission(this, permission)
                 != PERMISSION_GRANTED
             ) {
-                requestPermissions(
-                    this,
-                    arrayOf(permission),
-                    REQUEST_LOCATION_PERMISSION
-                )
+                deniedPermission.add(permission)
             }
-
         }
+        if (deniedPermission.isNotEmpty()) {
+            requestPermissions(
+                this,
+                deniedPermission.toTypedArray(),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+
     }
+
 
     companion object {
         private const val REQUEST_LOCATION_PERMISSION = 2

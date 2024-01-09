@@ -1,5 +1,6 @@
 package com.example.healthy.utils
 
+import android.Manifest
 import android.app.Activity
 import android.app.Application
 import android.bluetooth.*
@@ -7,6 +8,9 @@ import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
 import android.content.Context
+import android.content.pm.PackageManager
+import androidx.core.app.ActivityCompat
+import com.example.healthy.MyApplication
 import java.util.ArrayList
 
 object BleBluetooth : AbstractBluetooth() {
@@ -29,6 +33,13 @@ object BleBluetooth : AbstractBluetooth() {
             super.onConnectionStateChange(gatt, status, newState)
             if (newState == BluetoothGatt.STATE_CONNECTED) {
                 servicesList.clear()
+                if (ActivityCompat.checkSelfPermission(
+                        MyApplication.globalContext,
+                        Manifest.permission.BLUETOOTH_CONNECT
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return
+                }
                 gatt?.discoverServices()
                 listener?.onDeviceStatusChange(newState)
             } else if (newState == BluetoothGatt.STATE_DISCONNECTED) {
@@ -66,15 +77,36 @@ object BleBluetooth : AbstractBluetooth() {
     }
 
     override fun scanDevice(activity: Activity?) {
+        if (ActivityCompat.checkSelfPermission(
+                MyApplication.globalContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         scanner?.startScan(scanCallBack)
     }
 
     override fun stopScanDevice() {
+        if (ActivityCompat.checkSelfPermission(
+                MyApplication.globalContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         scanner?.stopScan(scanCallBack)
     }
 
-    override fun connectDevice(context: Context?, device: BluetoothDevice?) {
+    override fun connectDevice(context: Context?, device: BluetoothDevice?){
         if (bluetoothGatt != null) {
+            if (ActivityCompat.checkSelfPermission(
+                    MyApplication.globalContext,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
             bluetoothGatt?.close()
             bluetoothGatt = null
         }
@@ -84,6 +116,13 @@ object BleBluetooth : AbstractBluetooth() {
     }
 
     override fun connectService(service: BluetoothGattService) {
+        if (ActivityCompat.checkSelfPermission(
+                MyApplication.globalContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         for (character in service.characteristics) {
             if (character.properties.and(BluetoothGattCharacteristic.PROPERTY_NOTIFY) == 0) {
                 continue
@@ -101,6 +140,13 @@ object BleBluetooth : AbstractBluetooth() {
     override fun destroy(activity: Activity?) {
         stopScanDevice()
         listener?.onDeviceStatusChange(STATUS_DESTROY)
+        if (ActivityCompat.checkSelfPermission(
+                MyApplication.globalContext,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
         bluetoothGatt?.close()
         bluetoothGatt = null
     }

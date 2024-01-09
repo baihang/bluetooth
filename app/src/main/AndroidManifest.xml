@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.healthy">
 
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <uses-feature
-        android:name="android.hardware.touchscreen"
-        android:required="false" />
-    <uses-feature
-        android:name="android.software.leanback"
-        android:required="true" />
 
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_LOGS" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+<!--    <uses-permission android:name="android.permission.READ_LOGS" />-->
+<!--    <uses-permission android:name="android.permission.CAMERA" />-->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <application
         android:name=".MyApplication"
@@ -31,45 +29,26 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity
-            android:name=".CameraActivity"
-            android:exported="false">
-            <meta-data
-                android:name="android.app.lib_name"
-                android:value="" />
-        </activity>
-        <activity
-            android:name=".MainActivity2"
-            android:banner="@drawable/app_icon_your_company"
-            android:exported="true"
-            android:icon="@drawable/app_icon_your_company"
-            android:label="@string/title_activity_main2"
-            android:logo="@drawable/app_icon_your_company"
-            android:screenOrientation="landscape">
+        <!--        <activity-->
+<!--            android:name=".CameraActivity"-->
+<!--            android:exported="false">-->
+<!--            <meta-data-->
+<!--                android:name="android.app.lib_name"-->
+<!--                android:value="" />-->
+<!--        </activity>-->
 
-        </activity>
+<!--        <activity-->
+<!--            android:name=".utils.TestImageLoad"-->
+<!--            android:exported="true" />-->
+<!--        <activity-->
+<!--            android:name=".ScrollingActivity"-->
+<!--            android:exported="false"-->
+<!--            android:label="@string/title_activity_scrolling"-->
+<!--            android:theme="@style/AppTheme.NoActionBar" />-->
         <activity
-            android:name=".DetailsActivity"
-            android:exported="false" />
-        <activity
-            android:name=".PlaybackActivity"
-            android:exported="false" />
-        <activity
-            android:name=".BrowseErrorActivity"
-            android:exported="false" />
-        <activity
-            android:name=".utils.TestImageLoad"
-            android:exported="true" />
-        <activity
-            android:name=".ScrollingActivity"
-            android:exported="false"
-            android:label="@string/title_activity_scrolling"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".MainActivity"
+            android:name="com.example.healthy.MainActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:exported="true"
-            android:screenOrientation="fullSensor"
             android:theme="@style/LaunchTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -78,29 +57,29 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".utils.TestBindService" />
         <service
-            android:name=".utils.TestServices"
+            android:name="com.example.healthy.utils.TestBindService"
             android:exported="false" />
         <service
-            android:name=".utils.TestMessengerService"
+            android:name="com.example.healthy.utils.TestMessengerService"
             android:exported="false"
             android:process="com.test.service" />
 
         <activity
-            android:name=".utils.TestActivityA"
+            android:name="com.example.healthy.utils.TestActivityA"
             android:exported="false"
             android:launchMode="singleTop" />
         <activity
-            android:name=".utils.TestActivityB"
+            android:name="com.example.healthy.utils.TestActivityB"
             android:exported="false" />
         <activity
-            android:name=".utils.TestActivityC"
+            android:name="com.example.healthy.utils.TestActivityC"
             android:exported="false" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.provider"
+            android:authorities="com.example.healthy.utils.provider"
+            android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"

@@ -242,17 +242,12 @@ class DevicesFragment : Fragment() {
 
         override fun onBindViewHolder(holder: DevicesViewHolder, position: Int) {
             val device: BluetoothDevice? = deviceArray[position]
-            holder.deviceName?.let {
-                if (ActivityCompat.checkSelfPermission(
-                        it.context,
-                        Manifest.permission.BLUETOOTH_CONNECT
-                    )
-                    != PackageManager.PERMISSION_GRANTED
-                ) {
-                    return
+            kotlin.runCatching {
+                holder.deviceName?.let {
+                    it.text = device?.name ?: "蓝牙-未命名"
                 }
-                it.text = device?.name ?: "蓝牙-未命名"
             }
+
             holder.deviceMac?.text = device?.address ?: "mac address"
 
             holder.layout?.setOnClickListener {
