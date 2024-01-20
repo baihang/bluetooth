@@ -56,6 +56,7 @@
             android:layout_marginTop="12dp"
             android:background="@drawable/shape_10_radius"
             android:text="@string/re_upload"
+            android:visibility="invisible"
             app:layout_constraintEnd_toStartOf="@id/get_result"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/result" />

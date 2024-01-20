@@ -56,10 +56,14 @@ data class HistoryFile(
         }
     }
 
-    fun analyzeResult(end: (() -> Unit)? = null) {
+    /**
+     * 六导联，暂时不用
+     */
+    fun analyzeResult(end: ((String) -> Unit)? = null) {
         CoroutineScope(Dispatchers.IO).launch {
             if (id <= 0) {
                 loge("analyzeResult return by id = $id")
+                end?.invoke("请先上传文件")
                 return@launch
             }
             val map = HashMap<String, String>()
@@ -71,14 +75,39 @@ data class HistoryFile(
             if (result.isSucceed) {
                 val analyzeResult =
                     JsonUtil.jsonStr2Object(result.data, HeartAnalyzeResult::class.java)
-                end?.invoke()
+                end?.invoke("分析成功")
                 if (analyzeResult.state == 0) {
 
                 }
             }
         }
-
     }
+
+    fun analyzeResult2(end: ((String) -> Unit)? = null) {
+        CoroutineScope(Dispatchers.IO).launch {
+            if (filePath.isNullOrEmpty() || !File(filePath).exists()) {
+                end?.invoke("文件不存在")
+                return@launch
+            }
+            val map = HashMap<String, Any>()
+            map["token"] = TokenRefreshUtil.getInstance().token
+            map["data"] = File(filePath)
+            val result = NetWortUtil.postMulti("http://www.vipmember.com.cn:82/analyse", map)
+            loge("analyzeResult = $result")
+            if (result.isSucceed) {
+//                val analyzeResult =
+//                    JsonUtil.jsonStr2Object(result.data, HeartAnalyzeResult::class.java)
+                end?.invoke("分析成功")
+                analysedMsg = result.data
+//                if (analyzeResult.state == 0) {
+//
+//                }
+            }else{
+                end?.invoke("分析错误：${result.data}")
+            }
+        }
+    }
+
 }
 
 enum class Status {

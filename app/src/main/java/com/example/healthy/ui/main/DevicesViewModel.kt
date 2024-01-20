@@ -253,7 +253,7 @@ class DevicesViewModel(
                 val dates = dataQueue.toArray()
                 dataQueue.clear()
                 for (d in dates) {
-                    strBuilder.append((d as BaseData).getBodyData())
+                    (d as BaseData).getDataString(strBuilder)
                 }
                 uploadEcgMinute(strBuilder.toString())
 //                NetWortUtil.upEcgData(strBuilder.toString())
@@ -264,7 +264,7 @@ class DevicesViewModel(
     private val ecgMinuteList = ArrayList<String>()
     private fun uploadEcgMinute(data: String) {
         ecgMinuteList.add(data)
-        if (ecgMinuteList.size < 10) {
+        if (ecgMinuteList.size < 3) {
             return
         }
         loge("ecgMinuteList size = ${ecgMinuteList.size}")
@@ -283,12 +283,14 @@ class DevicesViewModel(
             val map = HashMap<String, Any>()
             map["data"] = file
             CoroutineScope(Dispatchers.IO).launch {
-                val result = NetWortUtil.postMulti("http://www.vipmember.com.cn:8080/getChannel", map)
+//                val result = NetWortUtil.postMulti("http://www.vipmember.com.cn:82/analyse", map)
+                val result = NetWortUtil.postMulti("http://www.vipmember.com.cn:81/getHeartRate", map)
                 loge("result = $result")
                 if(result.isSucceed && result.data.isNotEmpty()){
-                    val res = result.data.replace("\\", "")
-                    val bean = JsonUtil.jsonStr2Object(res.substring(1, res.length - 1), UploadEcgBean::class.java)
-                    uploadNetResult.postValue("通道：${bean.channel} 心率：${bean.heartRate} 分析：${bean.result}")
+//                    val res = result.data.replace("\\", "")
+//                    val bean = JsonUtil.jsonStr2Object(res.substring(1, res.length - 1), UploadEcgBean::class.java)
+//                    uploadNetResult.postValue("通道：${bean.channel} 心率：${bean.heartRate} 分析：${bean.result}")
+                    uploadNetResult.postValue("接口请求成功：${result.data}")
                 }else{
                     uploadNetResult.postValue("请求错误：${result.data}")
                 }

@@ -75,14 +75,30 @@ object VirtualBluetooth : AbstractBluetooth() {
         }
     }
 
+    private var virtualInt = 9000
+    private var step = 1
+
     private fun getVirtualData(data: BaseData): ByteArray {
-        Log.i(TAG, "getVirtualData " + data.label)
+//        Log.i(TAG, "getVirtualData " + data.label)
         val result = ByteArray(data.headData.size + data.bodyData.size + data.trialData.size)
+        var index = 0
         for (i in result.indices) {
             if (i < data.headData.size) {
                 result[i] = data.headData[i].toByte()
             } else {
-                result[i] = (Math.random() * 10).toInt().toByte()
+                when(index){
+                    0 -> result[i] = virtualInt.shr(16).and(0xff).toByte()
+                    1 -> result[i] = virtualInt.shr(8).and(0xFF).toByte()
+                    else -> {
+                        result[i] = virtualInt.and(0xff).toByte()
+                        index = -1
+                        virtualInt+= step
+                        if(virtualInt > 10000){
+                            virtualInt = 9000
+                        }
+                    }
+                }
+                index++
             }
         }
         return result

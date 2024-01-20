@@ -31,4 +31,16 @@ class HeartSix2Data : HeartThreeData() {
         return valueArray
     }
 
+    override fun getDataString(sb: StringBuilder?): String {
+        val stringBuilder = sb ?: StringBuilder()
+        val data = getData()
+        if(data.isEmpty()) return ""
+        for (index in 0 until  data[0].size) {
+            for (element in data) {
+                stringBuilder.append(element[index]).append(" ")
+            }
+        }
+        return stringBuilder.toString()
+    }
+
 }

@@ -99,7 +99,7 @@ abstract class BaseData : Cloneable {
         return builder.toString()
     }
 
-    fun getDataString(sb: StringBuilder? = null): String {
+    open fun getDataString(sb: StringBuilder? = null): String {
         val stringBuilder = sb ?: StringBuilder()
         val data = getData()
         for (item in data) {

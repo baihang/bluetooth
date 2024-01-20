@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat.getColor
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -205,9 +206,16 @@ class DataFragment : Fragment() {
                 }
             }
             holder.getResult.singleClick {
-                item.analyzeResult {
+                holder.getResult.isEnabled = false
+                holder.getResult.text = "正在分析"
+                item.analyzeResult2 {
+                    holder.getResult.post {
+                        Toast.makeText(holder.getResult.context, it, Toast.LENGTH_LONG).show()
+                        holder.getResult.isEnabled = true
+                        holder.getResult.setText(R.string.re_get_result)
+                        holder.getResult.post { notifyItemChanged(position) }
+                    }
                     fileDao?.update(item)
-                    holder.getResult.post { notifyItemChanged(position) }
                 }
             }
             holder.delete.singleClick {

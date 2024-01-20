@@ -55,9 +55,9 @@ public class NetWortUtil {
 
     private final static OkHttpClient client = new OkHttpClient().newBuilder()
             .eventListenerFactory(NetWorkEventListener.Companion.getFACTORY())
-            .connectTimeout(20, TimeUnit.SECONDS)
-            .writeTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
             .build();
 
     public static void refreshUrl(Context context) {
